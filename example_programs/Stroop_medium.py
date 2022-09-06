@@ -11,10 +11,10 @@ from sweetpea import fully_cross_block, synthesize_trials_uniform, print_experim
 Stroop Task
 ******************************
 factors (levels):
-- current color (red, blue, green, brown)
-- current word (red, blue, green, brown)
+- current color (red, blue, green)
+- current word (red, blue, green)
 - congruency (congruent, incongruent): Factor dependent on color and word.
-- correct response (up, down, left right): Factor dependent on color.
+- correct response (up, down right): Factor dependent on color.
 - response Transition (repetition, switch). Factor dependent on response:
 
 design:
@@ -26,8 +26,8 @@ design:
 
 # DEFINE COLOR AND WORD FACTORS
 
-color      = Factor("color",  ["red", "blue", "green", "brown"])
-word       = Factor("motion", ["red", "blue", "green", "brown"])
+color      = Factor("color",  ["red", "blue", "green"])
+word       = Factor("motion", ["red", "blue", "green"])
 
 # DEFINE CONGRUENCY FACTOR
 
@@ -54,14 +54,11 @@ def response_down(color):
     return color == "blue"
 def response_left(color):
     return color == "green"
-def response_right(color):
-    return color == "brown"
 
 response = Factor("response", [
     DerivedLevel("up", WithinTrial(response_up,   [color])),
     DerivedLevel("down", WithinTrial(response_down,   [color])),
     DerivedLevel("left", WithinTrial(response_left,   [color])),
-    DerivedLevel("right", WithinTrial(response_right,   [color])),
 ])
 
 # DEFINE RESPONSE TRANSITION FACTOR
@@ -90,8 +87,8 @@ block        = fully_cross_block(design, crossing, constraints)
 
 # SOLVE
 
-save_cnf(block, "/tmp/restroop.cnf")
+save_cnf(block, "/tmp/restroopm.cnf")
 
-experiments  = synthesize_trials_uniform(block, 5, approx_ok=True)
+experiments  = synthesize_trials_uniform(block, 5)
 
 print_experiments(block, experiments)

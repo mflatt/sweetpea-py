@@ -20,6 +20,7 @@ from sweetpea.constraints import (
     at_most_k_in_a_row, at_least_k_in_a_row, exactly_k, exactly_k_in_a_row, exclude, minimum_trials)
 from sweetpea.sampling_strategies.non_uniform import NonUniformSamplingStrategy
 from sweetpea.sampling_strategies.unigen import UnigenSamplingStrategy
+from sweetpea.sampling_strategies.cmsgen import CMSgenSamplingStrategy
 from sweetpea.sampling_strategies.uniform_combinatoric import UniformCombinatoricSamplingStrategy
 from sweetpea.server import build_cnf
 import csv
@@ -349,7 +350,7 @@ def synthesize_trials_non_uniform(block: Block, samples: int) -> List[dict]:
         return synthesize_trials(block, samples, sampling_strategy=UniformCombinatoricSamplingStrategy)
 
 
-def synthesize_trials_uniform(block: Block, samples: int) -> List[dict]:
+def synthesize_trials_uniform(block: Block, samples: int, approx_ok: bool = False) -> List[dict]:
     """Synthesizes experimental trials with uniform sampling. See
     :func:`.synthesize_trials` for more information.
 
@@ -365,7 +366,10 @@ def synthesize_trials_uniform(block: Block, samples: int) -> List[dict]:
         levels, where each such list contains to one level per trial.
     """
     if block.complex_factors_or_constraints:
-        return synthesize_trials(block, samples, sampling_strategy=UnigenSamplingStrategy)
+        if approx_ok:
+            return synthesize_trials(block, samples, sampling_strategy=CMSgenSamplingStrategy)
+        else:
+            return synthesize_trials(block, samples, sampling_strategy=UnigenSamplingStrategy)
     else:
         return synthesize_trials(block, samples, sampling_strategy=UniformCombinatoricSamplingStrategy)
 
@@ -451,4 +455,4 @@ def __generate_cnf(block: Block) -> str:
         DIMACS-formatted string.
     """
     cnf = build_cnf(block)
-    return cnf.as_unigen_string(support_set_length = block.variables_per_sample())
+    return cnf.as_unigen_string()

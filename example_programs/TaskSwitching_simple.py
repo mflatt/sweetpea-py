@@ -133,6 +133,8 @@ design       = [color, motion, task, congruency, response, task_transition, resp
 crossing     = [color, motion, task]
 block        = fully_cross_block(design, crossing, constraints)
 
+save_cnf(block, "/tmp/restroop.cnf")
+
 experiments  = synthesize_trials_non_uniform(block, 5)
 
 print_experiments(block, experiments)

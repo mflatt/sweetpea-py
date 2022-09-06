@@ -69,7 +69,7 @@ __all__ = [
     # We export the environment variable names so they will be documented.
     'DOWNLOAD_UNIGEN_ENV_VAR', 'UNIGEN_EXE_ENV_VAR',
     # The rest of the exports are for use in other modules.
-    'CRYPTOMINISAT_EXE', 'DEFAULT_DOWNLOAD_IF_MISSING', 'UNIGEN_EXE',
+    'CRYPTOMINISAT_EXE', 'DEFAULT_DOWNLOAD_IF_MISSING', 'UNIGEN_EXE', 'CMSGEN_EXE',
     'ensure_executable_available'
 ]
 
@@ -130,12 +130,14 @@ def _build_exe_name(base_name: str) -> Path:
 APPROXMC_EXE = _build_exe_name('approxmc')
 CRYPTOMINISAT_EXE = _build_exe_name('cryptominisat5')
 UNIGEN_EXE = _build_exe_name('unigen')
+CMSGEN_EXE = _build_exe_name('cmsgen')
 
 # An easy-to-use collection of the paths.
 EXECUTABLE_PATHS = [
     APPROXMC_EXE,
     CRYPTOMINISAT_EXE,
     UNIGEN_EXE,
+    CMSGEN_EXE,
 ]
 
 

@@ -6,13 +6,12 @@ from sweetpea.primitives import Factor, DerivedLevel, WithinTrial, Transition
 from sweetpea.constraints import at_most_k_in_a_row, minimum_trials
 from sweetpea import fully_cross_block, synthesize_trials_uniform, print_experiments, save_cnf
 
-
 """
 Stroop Task
 ******************************
 factors (levels):
-- current color (red, blue, green, brown)
-- current word (red, blue, green, brown)
+- current color (red, blue, green)
+- current word (red, blue, green)
 - congruency (congruent, incongruent): Factor dependent on color and word.
 - correct response (up, down, left right): Factor dependent on color.
 - response Transition (repetition, switch). Factor dependent on response:
@@ -26,8 +25,8 @@ design:
 
 # DEFINE COLOR AND WORD FACTORS
 
-color      = Factor("color",  ["red", "blue", "green", "brown"])
-word       = Factor("motion", ["red", "blue", "green", "brown"])
+color      = Factor("color",  ["red", "blue"])
+word       = Factor("motion", ["red", "blue"])
 
 # DEFINE CONGRUENCY FACTOR
 
@@ -52,16 +51,10 @@ def response_up(color):
     return color == "red"
 def response_down(color):
     return color == "blue"
-def response_left(color):
-    return color == "green"
-def response_right(color):
-    return color == "brown"
 
 response = Factor("response", [
     DerivedLevel("up", WithinTrial(response_up,   [color])),
     DerivedLevel("down", WithinTrial(response_down,   [color])),
-    DerivedLevel("left", WithinTrial(response_left,   [color])),
-    DerivedLevel("right", WithinTrial(response_right,   [color])),
 ])
 
 # DEFINE RESPONSE TRANSITION FACTOR
@@ -79,8 +72,7 @@ resp_transition = Factor("response_transition", [
 
 # DEFINE SEQUENCE CONSTRAINTS
 
-k = 7
-constraints = [at_most_k_in_a_row(k, resp_transition)]
+constraints = []
 
 # DEFINE EXPERIMENT
 
@@ -90,7 +82,7 @@ block        = fully_cross_block(design, crossing, constraints)
 
 # SOLVE
 
-save_cnf(block, "/tmp/restroop.cnf")
+save_cnf(block, "/tmp/stroop3.cnf")
 
 experiments  = synthesize_trials_uniform(block, 5, approx_ok=True)
 
