@@ -27,8 +27,7 @@ class DesignPartitions():
                 for f in c:
                     if f not in result:
                         result.append(f)
-        # Not yet actually filtering complex:
-        # result = list(filter(lambda f: not f.has_complex_window, result))
+        result = list(filter(lambda f: not f.has_complex_window, result))
         self._crossed = result
         return result
 
@@ -36,8 +35,6 @@ class DesignPartitions():
         return list(filter(lambda f: f.is_derived(), self.get_crossed_noncomplex_factors()))
 
     def get_crossed_complex_factors(self):
-        # Not yet separating complex:
-        return []
         result = []
         for c in self._block.crossings:
             for f in c:
