@@ -203,7 +203,7 @@ def test_correct_solution_count_with_repeated_color_and_text_factors_and_constra
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor], 6))
 def test_correct_solution_count_with_repeated_color_factor_and_no_repetition_allowed(strategy, design):
     crossing = [[color, text], [mix, text]]
-    constraints = [Exclude(repeated_color_factor, "yes")]
+    constraints = [Exclude(repeated_color_factor["yes"])]
 
     block  = MultiCrossBlock(design, crossing, constraints)
     experiments  = synthesize_trials(block, 100, sampling_strategy=strategy)
@@ -213,7 +213,7 @@ def test_correct_solution_count_with_repeated_color_factor_and_no_repetition_all
 
 def test_correct_solution_count_with_repeated_color_factor_and_no_repetition_allowed_cnf(design=[color, text, mix, repeated_color_factor]):
     crossing = [[color, text], [mix, text]]
-    constraints = [Exclude(repeated_color_factor, "yes")]
+    constraints = [Exclude(repeated_color_factor["yes"])]
 
     block  = MultiCrossBlock(design, crossing, constraints)
     cnf = build_cnf(block)

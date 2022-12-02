@@ -7,7 +7,6 @@ from typing import List, cast
 from sweetpea._internal.sampling_strategy.base import Gen, SamplingResult
 from sweetpea._internal.block import Block
 from sweetpea._internal.core import sample_uniform, CNF
-from sweetpea._internal.constraint import minimum_trials
 
 """
 This strategy relies UniGen to sample uniformly from possible solutions.

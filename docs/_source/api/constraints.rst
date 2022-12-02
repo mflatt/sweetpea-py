@@ -8,18 +8,18 @@ Constraints
    Abstract class representing a constraint.
            
 
-.. class:: sweetpea.Exclude(factor, level)
+.. class:: sweetpea.Exclude(level)
 
               Constrains an experiment to disallow the specified
               level.
 
-              :param factor: the factor whose levels is named by `level`
-              :type factor: Factor
-              :param level: a level or name of a level among `factor`'s levels
-              :type level: Union[Level, Any]
+              :param level: either a level,
+                            a tuple containing a factor and the name of one of its levels,
+                            or a tuple containing a factor and one of its levels
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level]]
               :rtype: Constraint
 
-.. class:: sweetpea.Pin(index, factor, level)
+.. class:: sweetpea.Pin(index, level)
 
               Constrains an experiment to require the specified level
               at the specified trial index. A negative trial index
@@ -30,10 +30,10 @@ Constraints
 
               :param index: a trial index, counting forward from 0 or backward from -1
               :type index: int
-              :param factor: the factor whose level is named by `level`
-              :type factor: Factor
-              :param level: a level or name of a level among `factor`'s levels
-              :type level: Union[Level, Any]
+              :param level: either a level,
+                            a tuple containing a factor and the name of one of its levels,
+                            or a tuple containing a factor and one of its levels
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level]]
               :rtype: Constraint
 
 .. class:: sweetpea.MinimumTrials(k)
@@ -53,11 +53,12 @@ Constraints
               :param k: the maximum number of consecutive repetitions
                         to allow
               :type k: int
-              :param level: either a tuple containing a factor and one of its levels,
+              :param level: either a level,
                             a tuple containing a factor and the name of one of its levels,
+                            a tuple containing a factor and one of its levels,
                             or just a factor; the last case is a shorthand for a separate
                             constraint for each of the factor's levels
-              :type level: Union[Tuple[Factor, Level], Tuple[Factor, Any], Factor]
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level], Factor]
               :rtype: Constraint
 
 .. class:: sweetpea.AtLeastKInARow(k, level)
@@ -69,29 +70,29 @@ Constraints
               :param k: the minimum number of consecutive repetitions
                         to require
               :type k: int
-              :param level: like :class:`AtMostKInARow`
-              :type level: Union[Tuple[Factor, Level], Tuple[Factor, Any], Factor]
+              :param level: like :class:`.AtMostKInARow`
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level], Factor]
               :rtype: Constraint
 
 .. class:: sweetpea.ExactlyKInARow(k, level)
 
               Constrains an experiment so that when the level
-              identified by `factor_and_level` appears in a trial, it
-              also appears in exactly `k`-1 adjacent trials.
+              identified by `level` appears in a trial, it also
+              appears in exactly `k`-1 adjacent trials.
 
               :param k: the number of repetitions to require
               :type k: int
-              :param level: like :class:`AtMostKInARow`
-              :type level: Union[Tuple[Factor, Level], Tuple[Factor, Any], Factor]
+              :param level: like :class:`.AtMostKInARow`
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level], Factor]
               :rtype: Constraint
 
-.. class:: sweetpea.ExactlyK(k, factor_and_level)
+.. class:: sweetpea.ExactlyK(k, level)
 
               Constrains an experiment so that the level identified by
-              `factor_and_level` appears in exactly `k` trials.
+              `level` appears in exactly `k` trials.
 
               :param k: the number of repetitions to require
               :type k: int
-              :param level: like :class:`AtMostKInARow`
-              :type level: Union[Tuple[Factor, Level], Tuple[Factor, Any], Factor]
+              :param level: like :class:`.AtMostKInARow`
+              :type level: Union[Level, Tuple[Factor, Any], Tuple[Factor, Level], Factor]
               :rtype: Constraint

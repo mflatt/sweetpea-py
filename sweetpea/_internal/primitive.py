@@ -98,6 +98,12 @@ class Level:
     def uses_factor(self, factor):
         return False
 
+    def get_factor(self) -> Factor:
+        if hasattr(self, 'factor'):
+            return cast(Factor, cast(Any, self).factor)
+        else:
+            raise Exception("no factor present")
+
 @dataclass(eq=False)
 class SimpleLevel(Level):
     """A simple :class:`.Level`, which only has a name.

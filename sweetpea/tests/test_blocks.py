@@ -75,8 +75,8 @@ def test_fully_cross_block_first_variable_for_factor(design, expected):
     block = CrossBlock(design,
                        [color, text],
                        # So {color,text}_repeats_factor is not treated as implied:
-                       [Exclude(color_repeats_factor, yes_color_repeats),
-                        Exclude(text_repeats_factor, yes_text_repeats)])
+                       [Exclude(yes_color_repeats),
+                        Exclude(yes_text_repeats)])
 
     assert block.first_variable_for_level(color, red_color) == expected[0]
     assert block.first_variable_for_level(color, blue_color) == expected[0] + 1
@@ -92,7 +92,7 @@ def test_fully_cross_block_first_variable_for_factor_with_color3():
     block = CrossBlock([color3_repeats_factor, color3, text],
                        [color3, text],
                        # So color3_repeats_factor is not treated as implied:
-                       [Exclude(color3_repeats_factor, yes_color3_repeats)])
+                       [Exclude(yes_color3_repeats)])
 
     assert block.first_variable_for_level(color3_repeats_factor, yes_color3_repeats) == 30
     assert block.first_variable_for_level(color3_repeats_factor, no_color3_repeats) == 31
@@ -102,7 +102,7 @@ def test_factor_variables_for_trial():
     block = CrossBlock([color, text, color_repeats_factor],
                        [color, text],
                        # So color_repeats_factor is not treated as implied:
-                       [Exclude(color_repeats_factor, yes_color_repeats)])
+                       [Exclude(yes_color_repeats)])
 
     assert block.factor_variables_for_trial(color, 1) == [1, 2]
     assert block.factor_variables_for_trial(color, 4) == [13, 14]
@@ -142,7 +142,7 @@ def test_variable_list_for_trial():
     block = CrossBlock([color, text, color_repeats_factor],
                        [color, text],
                        # So color_repeats_factor is not treated as implied:
-                       [Exclude(color_repeats_factor, yes_color_repeats)])
+                       [Exclude(yes_color_repeats)])
 
     assert block.variable_list_for_trial(1) == [[ 1, 2 ], [ 3, 4 ], []]
     assert block.variable_list_for_trial(2) == [[ 5, 6 ], [ 7, 8 ], [18]]
@@ -168,8 +168,8 @@ def test_fully_cross_block_decode_variable():
     block = CrossBlock([color, text, color_repeats_factor, text_repeats_factor],
                        [color, text],
                        # So {color,text}_repeats_factor is not treated as implied:
-                       [Exclude(color_repeats_factor, yes_color_repeats),
-                        Exclude(text_repeats_factor, yes_text_repeats)])
+                       [Exclude(yes_color_repeats),
+                        Exclude(yes_text_repeats)])
 
     assert block.decode_variable(1) == (color, red_color)
     assert block.decode_variable(2) == (color, blue_color)
@@ -196,8 +196,8 @@ def test_fully_cross_block_decode_variable_with_transition_first():
     block = CrossBlock([text_repeats_factor, text, color, color_repeats_factor],
                        [color, text],
                        # So {color,text}_repeats_factor is not treated as implied:
-                       [Exclude(color_repeats_factor, yes_color_repeats),
-                        Exclude(text_repeats_factor, yes_text_repeats)])
+                       [Exclude(yes_color_repeats),
+                        Exclude(yes_text_repeats)])
 
     assert block.decode_variable(1) == (text, red_text)
     assert block.decode_variable(2) == (text, blue_text)
@@ -223,7 +223,7 @@ def test_fully_cross_block_decode_variable_with_transition_first():
 def test_fully_cross_block_decode_variable_with_general_window():
     block = CrossBlock([color, text, congruent_bookend],
                        [color, text],
-                       [Exclude(congruent_bookend, no_congruent)])
+                       [Exclude(no_congruent)])
 
     assert block.decode_variable(1) == (color, red_color)
     assert block.decode_variable(2) == (color, blue_color)
@@ -293,12 +293,12 @@ def test_fully_cross_block_grid_variables():
                       [color, text], []).grid_variables() == 16
     assert CrossBlock([color, text, con_factor],
                       [color, text],
-                      [Exclude(con_factor, con_level)]).grid_variables() == 12
+                      [Exclude(con_level)]).grid_variables() == 12
 
     # Should include grid variables, as well as additional variables for complex windows.
     assert CrossBlock([color, text, color_repeats_factor],
                       [color, text],
-                      [Exclude(color_repeats_factor, yes_color_repeats)]).grid_variables() == 16
+                      [Exclude(yes_color_repeats)]).grid_variables() == 16
 
 
 def test_fully_cross_block_variables_per_sample():
@@ -306,17 +306,17 @@ def test_fully_cross_block_variables_per_sample():
                       [color, text], []).variables_per_sample() == 16
     assert CrossBlock([color, text, con_factor],
                       [color, text],
-                      [Exclude(con_factor, con_level)]).variables_per_sample() == 12
+                      [Exclude(con_level)]).variables_per_sample() == 12
 
     # Should include grid variables, as well as additional variables for complex windows.
     assert CrossBlock([color, text, color_repeats_factor],
                       [color, text],
-                      [Exclude(color_repeats_factor, yes_color_repeats)]).variables_per_sample() == 22
+                      [Exclude(yes_color_repeats)]).variables_per_sample() == 22
 
     assert CrossBlock([color, text, color_repeats_factor, text_repeats_factor],
                       [color, text],
-                      [Exclude(color_repeats_factor, yes_color_repeats),
-                       Exclude(text_repeats_factor, yes_text_repeats)]).variables_per_sample() == 28
+                      [Exclude(yes_color_repeats),
+                       Exclude(yes_text_repeats)]).variables_per_sample() == 28
 
 
 def test_fully_cross_block_variables_for_factor():
@@ -351,7 +351,7 @@ def test_fully_cross_block_crossing_size_with_exclude():
     # No congruent excludes 2 trials, 4 - 2 = 2
     assert CrossBlock([color, text, con_factor],
                       [color, text],
-                      [Exclude(con_factor, con_level)],
+                      [Exclude(con_level)],
                       require_complete_crossing=False).crossing_size() == 2
 
 
@@ -381,8 +381,8 @@ def test_fully_cross_block_crossing_size_with_overlapping_exclude():
 
     assert CrossBlock([color, text, congruent_factor, legal_factor],
                       [color, text],
-                      [Exclude(congruent_factor, "congruent"), # Excludes 3
-                       Exclude(legal_factor, "no")], # Excludes 4, but 3 were already excluded
+                      [Exclude(congruent_factor["congruent"]), # Excludes 3
+                       Exclude(legal_factor["no"])], # Excludes 4, but 3 were already excluded
                       require_complete_crossing=False).crossing_size() == 5
 
 
@@ -391,7 +391,7 @@ def test_fully_cross_block_should_copy_input_lists():
     # user modifies the original list.
     design = [color, text, con_factor]
     crossing = [color, text]
-    constraints = [Exclude(con_factor, "con")]
+    constraints = [Exclude(con_factor["con"])]
 
     block = CrossBlock(design, crossing, constraints)
 
@@ -407,14 +407,14 @@ def test_fully_cross_block_should_copy_input_lists():
 
 
 def test_build_variable_list_for_simple_factors():
-    block = CrossBlock([color, text, con_factor], [color, text], [Exclude(con_factor, inc_level)])
+    block = CrossBlock([color, text, con_factor], [color, text], [Exclude(inc_level)])
 
     assert block.build_variable_list((color, red_color)) == [1, 7]
     assert block.build_variable_list((con_factor, con_factor["con"])) == [5, 11]
 
 
 def test_build_variable_list_for_complex_factors():
-    block = CrossBlock([color, text, color_repeats_factor], [color, text], [Exclude(color_repeats_factor, no_color_repeats)])
+    block = CrossBlock([color, text, color_repeats_factor], [color, text], [Exclude(no_color_repeats)])
 
     assert block.build_variable_list((color_repeats_factor, yes_color_repeats)) == [17, 19, 21]
     assert block.build_variable_list((color_repeats_factor, no_color_repeats))  == [18, 20, 22]
@@ -436,7 +436,7 @@ def test_build_variable_list_for_three_derived_levels():
                                  make_k_diff_level(1),
                                  make_k_diff_level(2)]);
 
-    block = CrossBlock([color, text, changed], [color, text], [Exclude(changed, "1")])
+    block = CrossBlock([color, text, changed], [color, text], [Exclude(changed["1"])])
 
     assert block.build_variable_list((changed, changed["0"])) == [17, 20, 23]
     # assert block.build_variable_list((changed, changed["1"])) == [18, 21, 24]
@@ -484,8 +484,8 @@ def test_crossing_size_with_complex_excludes():
         illegalTransition
     ])
 
-    constraints = [Exclude(objectConfiguration, illegalObject),
-                   Exclude(task_transition, illegalTransition)
+    constraints = [Exclude((objectConfiguration, illegalObject)),
+                   Exclude((task_transition, illegalTransition))
                    ]
 
     design       = [deviantColorObject, deviantOrientationObject, deviantMovementObject, objectConfiguration, task, task_transition]

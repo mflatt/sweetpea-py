@@ -5,7 +5,7 @@ sys.path.append("..")
 from sweetpea import (
     Factor, DerivedLevel, WithinTrial, Transition, AtMostKInARow,
     CrossBlock, synthesize_trials, print_experiments, tabulate_experiments,
-    CMSGen, IterateGen, RandomGen, IterateGurobiGen
+    CMSGen, IterateGen, RandomGen, IterateILPGen
 )
 
 """

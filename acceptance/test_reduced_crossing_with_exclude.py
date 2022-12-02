@@ -19,7 +19,7 @@ stimulus_configuration = Factor("stimulus configuration", [
     DerivedLevel("illegal", WithinTrial(illegal_stimulus, [color, word]))
 ])
 
-constraints = [Exclude(stimulus_configuration, "illegal")]
+constraints = [Exclude(stimulus_configuration["illegal"])]
 
 design       = [color, word, stimulus_configuration]
 crossing     = [color, word]
@@ -55,7 +55,7 @@ def test_correct_solution_count_with_exclusion_via_complex_factor(strategy):
         DerivedLevel("illegal", Transition(illegal_stimulus, [color, word]))
     ])
 
-    constraints = [Exclude(stimulus_configuration, "illegal")]
+    constraints = [Exclude(stimulus_configuration["illegal"])]
 
     design       = [color, word, stimulus_configuration]
     crossing     = [color, word]
@@ -86,7 +86,7 @@ def test_correct_solution_count_with_exclusion_via_nested_complex_factor(strateg
         DerivedLevel("illegal", WithinTrial(illegal_stimulus, [smiley]))
     ])
 
-    constraints = [Exclude(stimulus_configuration, "illegal")]
+    constraints = [Exclude(stimulus_configuration["illegal"])]
 
     design       = [color, word, smiley, stimulus_configuration]
     crossing     = [color, word]
@@ -100,7 +100,7 @@ def test_correct_solution_count_with_exclusion_via_nested_complex_factor(strateg
 @pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_override_flag_and_multiple_trials_excluded(strategy):
     # With this constraint, there should only be ONE allowed crossing, and therefore one solution.
-    constraints = [Exclude(stimulus_configuration, "legal")]
+    constraints = [Exclude(stimulus_configuration["legal"])]
     block       = CrossBlock(design, crossing, constraints, require_complete_crossing=False)
     experiments = synthesize_trials(block, 500, sampling_strategy=strategy)
 
@@ -123,7 +123,7 @@ def test_correct_solution_count_with_crossing_levels_excluded(strategy):
 
     block      = CrossBlock(design=[color, size, match],
                             crossing=[color, match],
-                            constraints=[Exclude(color, red)],
+                            constraints=[Exclude(red)],
                             require_complete_crossing=False)
     experiments = synthesize_trials(block=block, samples=200, sampling_strategy=strategy)
 
@@ -149,7 +149,7 @@ def test_correct_solution_count_with_design_levels_excluded(strategy):
     down = match.get_level('down')
 
     block      = CrossBlock(design=[color, size, match], crossing=[color, size],
-                            constraints=[Exclude(match, down)],
+                            constraints=[Exclude(down)],
                             require_complete_crossing=False)
     experiments = synthesize_trials(block=block, samples=200, sampling_strategy=strategy)
 
@@ -197,7 +197,7 @@ def test_correct_solution_with_extra_crossing_factor(strategy):
     ])
 
 
-    constraints = [Exclude(congruency, congruent)]
+    constraints = [Exclude(congruent)]
 
     design       = [color, word, response, congruency, location]
     crossing     = [color, word, location]
@@ -221,7 +221,7 @@ def test_correct_solution_with_just_one_factor(strategy):
 
     block      = CrossBlock(design=[color], crossing=[color],
                             require_complete_crossing=False,
-                            constraints=[Exclude(color, red)])
+                            constraints=[Exclude(red)])
     experiments = synthesize_trials(block=block, samples=1, sampling_strategy=strategy)
 
     assert len(experiments[0]['color']) == 1
@@ -229,7 +229,7 @@ def test_correct_solution_with_just_one_factor(strategy):
 
 def test_correct_solution_count_with_override_flag_and_multiple_trials_excluded_cnf():
     # With this constraint, there should only be ONE allowed crossing, and therefore one solution.
-    constraints = [Exclude(stimulus_configuration, "legal")]
+    constraints = [Exclude(stimulus_configuration["legal"])]
     block       = CrossBlock(design, crossing, constraints, require_complete_crossing=False)
     cnf = build_cnf(block)
 
@@ -262,7 +262,7 @@ def test_correct_solutions_with_implicitly_excluded_crossing_due_to_derived_defi
         DerivedLevel("unhappy", Transition(unhappy_stimulus, [color, word]))
     ])
 
-    constraints = [Exclude(aesthetic, "ugly")]
+    constraints = [Exclude(aesthetic["ugly"])]
 
     design       = [color, word, smiley, aesthetic]
     crossing     = [color, word, aesthetic]

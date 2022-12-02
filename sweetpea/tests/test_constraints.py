@@ -286,7 +286,7 @@ def test_fully_cross_with_exclude():
 
     block = CrossBlock([color, text, stimulus_configuration],
                        [color, text],
-                       [Exclude(stimulus_configuration, "illegal")],
+                       [Exclude(stimulus_configuration["illegal"])],
                        require_complete_crossing=False)
 
     backend_request = BackendRequest(36)
@@ -656,12 +656,12 @@ def test_kinarow_with_bad_factor():
 
 
 def test_exclude():
-    f = Exclude(color, "red")
+    f = Exclude(color["red"])
     backend_request = BackendRequest(0)
     f.apply(block, backend_request)
     assert backend_request.cnfs == [And([-1, -7, -13, -19])]
 
-    f = Exclude(con_factor, "con")
+    f = Exclude(con_factor["con"])
     backend_request = BackendRequest(0)
     f.apply(block, backend_request)
     assert backend_request.cnfs == [And([-5, -11, -17, -23])]
@@ -672,7 +672,7 @@ def test_exclude_with_transition():
                        [color, text],
                        [])
 
-    c = Exclude(color_repeats_factor, "yes")
+    c = Exclude(color_repeats_factor["yes"])
     backend_request = BackendRequest(0)
     c.apply(block, backend_request)
     assert backend_request.cnfs == [And([-17, -19, -21])]
@@ -683,7 +683,7 @@ def test_exclude_with_general_window():
                        [color, text],
                        [])
 
-    c = Exclude(congruent_bookend, "yes")
+    c = Exclude(congruent_bookend["yes"])
     backend_request = BackendRequest(0)
     c.apply(block, backend_request)
     assert backend_request.cnfs == [And([-17, -19])]
@@ -704,7 +704,7 @@ def test_exclude_with_reduced_crossing():
         DerivedLevel("illegal", WithinTrial(illegal_stimulus, [color, text]))
     ])
 
-    c = Exclude(stimulus_configuration, "illegal")
+    c = Exclude(stimulus_configuration["illegal"])
     block = CrossBlock([color, text, stimulus_configuration],
                        [color, text],
                        [c],
@@ -735,7 +735,7 @@ def test_exclude_with_three_derived_levels():
                                  make_k_diff_level(1),
                                  make_k_diff_level(2)]);
 
-    exclude_constraint = Exclude(changed, "2")
+    exclude_constraint = Exclude(changed["2"])
 
     design       = [color, text, changed]
     crossing     = [color, text]
@@ -746,17 +746,17 @@ def test_exclude_with_three_derived_levels():
     assert backend_request.cnfs == [And([-57, -60, -63, -66, -69, -72, -75, -78])]
 
 def test_pin():
-    f = Pin(0, color, "red")
+    f = Pin(0, color["red"])
     backend_request = BackendRequest(0)
     f.apply(block, backend_request)
     assert backend_request.cnfs == [And([1])]
 
-    f = Pin(-1, con_factor, "con")
+    f = Pin(-1, con_factor["con"])
     backend_request = BackendRequest(0)
     f.apply(block, backend_request)
     assert backend_request.cnfs == [And([23])]
 
-    f = Pin(1000, color, "red")
+    f = Pin(1000, color["red"])
     backend_request = BackendRequest(0)
     f.apply(block, backend_request)
     assert backend_request.cnfs == [And([1, -1])]

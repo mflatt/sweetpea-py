@@ -7,7 +7,7 @@ sys.path.append("..")
 import operator
 from sweetpea import (
     Factor, DerivedLevel, WithinTrial, Transition,
-    CrossBlock, AtMostKInARow, Exclude,
+    CrossBlock, AtMostKInARow,
     synthesize_trials, NonUniformGen, RandomGen,
     print_experiments
 )

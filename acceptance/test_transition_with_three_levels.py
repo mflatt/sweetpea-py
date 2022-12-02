@@ -28,7 +28,7 @@ def test_correct_solution_count_with_congruence_factor_but_unconstrained(design)
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100)
 
     assert len(experiments) == 6
 

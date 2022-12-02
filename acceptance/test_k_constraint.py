@@ -36,15 +36,15 @@ def test_check_constraints_on_crossing_factor(strategy, constraints_and_solution
 
 @pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('constraints_and_solutions',
-                         [[[ExactlyK(3, (direction, up)), ExactlyK(1, (direction, right))], 96],
-                          [[ExactlyK(4, (direction, up))], 24],
-                          [[ExactlyKInARow(4, (direction, up)), ExactlyK(4, (direction, up))], 24],
-                          [[ExactlyKInARow(3, (direction, up)), ExactlyK(3, (direction, up))], 144],
-                          [[ExactlyKInARow(1, (direction, up)),
+                         [[[ExactlyK(3, up), ExactlyK(1, right)], 96],
+                          [[ExactlyK(4, up)], 24],
+                          [[ExactlyKInARow(4, up), ExactlyK(4, up)], 24],
+                          [[ExactlyKInARow(3, up), ExactlyK(3, up)], 144],
+                          [[ExactlyKInARow(1, up),
                             ExactlyK(2,(direction, up)),
-                            Exclude(direction, left),
-                            ExactlyKInARow(1, (direction, down)),
-                            ExactlyKInARow(1, (direction, right))],
+                            Exclude(left),
+                            ExactlyKInARow(1, down),
+                            ExactlyKInARow(1, right)],
                            240]])
 def test_check_constraints_on_design_factor(strategy, constraints_and_solutions):
     constraints = constraints_and_solutions[0]
