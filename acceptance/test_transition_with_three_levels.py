@@ -3,10 +3,9 @@ import pytest
 
 from itertools import permutations
 
-from sweetpea import fully_cross_block, synthesize_trials_non_uniform
-from sweetpea.constraints import at_most_k_in_a_row, Reify
-from sweetpea.primitives import Factor, DerivedLevel, ElseLevel, WithinTrial, Transition
-from sweetpea.server import build_cnf
+from sweetpea import *
+from sweetpea._internal.constraint import Reify
+from sweetpea._internal.server import build_cnf
 from acceptance import path_to_cnf_files, reset_expected_solutions
 
 
@@ -28,8 +27,8 @@ def test_correct_solution_count_with_congruence_factor_but_unconstrained(design)
     crossing = [congruency]
     constraints = []
 
-    block  = fully_cross_block(design, crossing, constraints)
-    experiments  = synthesize_trials_non_uniform(block, 100)
+    block  = CrossBlock(design, crossing, constraints)
+    experiments  = synthesize_trials(block, 100, NonUniformGen)
 
     assert len(experiments) == 6
 
@@ -38,7 +37,7 @@ def test_correct_solution_count_with_congruence_factor_but_unconstrained_cnf(des
     crossing = [congruency]
     constraints = list(map(Reify, design))
 
-    block  = fully_cross_block(design, crossing, constraints)
+    block  = CrossBlock(design, crossing, constraints)
     cnf = build_cnf(block)
 
     if reset_expected_solutions:

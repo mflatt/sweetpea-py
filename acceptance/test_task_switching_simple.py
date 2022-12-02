@@ -1,8 +1,6 @@
 import pytest
 
-from sweetpea.primitives import Factor, DerivedLevel, WithinTrial, Transition
-from sweetpea.constraints import at_most_k_in_a_row
-from sweetpea import fully_cross_block, print_experiments, synthesize_trials_non_uniform
+from sweetpea import *
 from acceptance import assert_atmostkinarow, shuffled_design_sample
 
 # Simple Factors
@@ -55,12 +53,12 @@ def test_that_design_is_correctly_constrained(design):
 
     k = 2
     constraints = [
-        at_most_k_in_a_row(k, task_transition),
-        at_most_k_in_a_row(k, response_transition)
+        AtMostKInARow(k, task_transition),
+        AtMostKInARow(k, response_transition)
     ]
 
-    block = fully_cross_block(design, crossing, constraints)
-    experiments = synthesize_trials_non_uniform(block, 100)
+    block = CrossBlock(design, crossing, constraints)
+    experiments = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 100, "Design: %s" % str(list(map(lambda f: f.factor_name, design)))
     for c in constraints:
