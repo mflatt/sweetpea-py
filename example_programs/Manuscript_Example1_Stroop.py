@@ -6,7 +6,7 @@ sys.path.append("..")
 from sweetpea import (
     Factor, DerivedLevel, WithinTrial,
     MinimumTrials,
-    CrossBlock, synthesize_trials, NonUniformGen,
+    CrossBlock, synthesize_trials,
     print_experiments
 )
 
@@ -59,6 +59,6 @@ design       = [color, word, congruency, response]
 crossing     = [color, word]
 block        = CrossBlock(design, crossing, constraints)
 
-experiments  = synthesize_trials(block, 1, NonUniformGen)
+experiments  = synthesize_trials(block, 1)
 
 print_experiments(block, experiments)
