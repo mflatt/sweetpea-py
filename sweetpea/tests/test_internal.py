@@ -1,8 +1,8 @@
 import operator as op
 
-from sweetpea.internal.levels import get_all_levels
-from sweetpea.internal.iter import intersperse
-from sweetpea.primitives import Factor, DerivedLevel, Transition
+from sweetpea._internal.level import get_all_levels
+from sweetpea._internal.iter import intersperse
+from sweetpea._internal.primitive import Factor, DerivedLevel, Transition
 
 
 color = Factor("color", ["red", "blue"])

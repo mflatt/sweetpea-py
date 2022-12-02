@@ -7,15 +7,16 @@ from typing import List, Tuple, Any, Union, cast, Dict, Callable
 from itertools import chain, product
 from math import ceil
 
-from sweetpea.base_constraint import Constraint
-from sweetpea.internal.iter import chunk, chunk_list
-from sweetpea.blocks import Block, FullyCrossBlock, MultipleCrossBlock
-from sweetpea.backend import LowLevelRequest, BackendRequest
-from sweetpea.logic import If, Iff, And, Or, Not
-from sweetpea.primitives import DerivedFactor, DerivedLevel, Factor, Level, SimpleLevel
-from sweetpea.internal.argcheck import argcheck, make_istuple
-from sweetpea.internal.weight import combination_weight
-from sweetpea.internal.beforestart import BeforeStart
+from sweetpea._internal.base_constraint import Constraint
+from sweetpea._internal.iter import chunk, chunk_list
+from sweetpea._internal.block import Block
+from sweetpea._internal.cross_block import MultiCrossBlock
+from sweetpea._internal.backend import LowLevelRequest, BackendRequest
+from sweetpea._internal.logic import If, Iff, And, Or, Not
+from sweetpea._internal.primitive import DerivedFactor, DerivedLevel, Factor, Level, SimpleLevel
+from sweetpea._internal.argcheck import argcheck, make_istuple
+from sweetpea._internal.weight import combination_weight
+from sweetpea._internal.beforestart import BeforeStart
 
 def validate_factor(block: Block, factor: Factor) -> None:
     if not block.has_factor(factor):
@@ -123,7 +124,7 @@ class Cross(Constraint):
         pass
 
     @staticmethod
-    def apply(block: MultipleCrossBlock, backend_request: BackendRequest) -> None:
+    def apply(block: MultiCrossBlock, backend_request: BackendRequest) -> None:
         # Treat each crossing seperately, but they're related by shared variables, which
         # are the per-trial, per-level variables of factors used in multiple crossings
         for c in block.crossings:
@@ -192,12 +193,6 @@ class Cross(Constraint):
     def potential_sample_conforms(self, sample: dict) -> bool:
         # conformance by construction in combinatoric
         return True
-            
-class FullyCross(Cross):
-    """Covered by Cross"""
-
-class MultipleCross(Cross):
-    """Covered by Cross"""
 
 class Derivation(Constraint):
     """A derivation such as::

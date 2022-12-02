@@ -1,8 +1,8 @@
 import networkx as nx
 import operator as op
 
-from sweetpea.primitives import Factor, DerivedLevel, WithinTrial, Transition
-from sweetpea.design_graph import DesignGraph
+from sweetpea._internal.primitive import Factor, DerivedLevel, WithinTrial, Transition
+from sweetpea._internal.design_graph import DesignGraph
 
 
 # Setup

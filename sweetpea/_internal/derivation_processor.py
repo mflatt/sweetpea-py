@@ -6,11 +6,11 @@ import operator as op
 from typing import Any, Dict, List, Tuple, cast
 from functools import reduce
 
-from sweetpea.primitives import DerivationWindow, DerivedFactor, DerivedLevel, Level
-from sweetpea.blocks import Block
-from sweetpea.constraints import Derivation
-from sweetpea.internal.iter import chunk_list
-from sweetpea.internal.beforestart import BeforeStart
+from sweetpea._internal.primitive import Window, DerivedFactor, DerivedLevel, Level
+from sweetpea._internal.block import Block
+from sweetpea._internal.constraint import Derivation
+from sweetpea._internal.iter import chunk_list
+from sweetpea._internal.beforestart import BeforeStart
 
 class DerivationProcessor:
 
@@ -112,7 +112,7 @@ class DerivationProcessor:
 
     @staticmethod
     def shift_window(indices: List[List[object]],
-                     window: DerivationWindow,
+                     window: Window,
                      trial_size: int
                      ) -> List[List[object]]:
         """This is a helper function that shifts the indices of

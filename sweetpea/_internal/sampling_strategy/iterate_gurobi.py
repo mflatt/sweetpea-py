@@ -1,11 +1,9 @@
-from sweetpea.sampling_strategies.base import SamplingStrategy, SamplingResult
-from sweetpea.blocks import Block
+from sweetpea._internal.sampling_strategy.base import Gen, SamplingResult
+from sweetpea._internal.block import Block
+from sweetpea._internal.core import CNF
+from sweetpea._internal.core.generate.sample_ilp import sample_ilp_iterate
 
-from sweetpea.core import CNF
-from sweetpea.core.generate.sample_ilp import sample_ilp_iterate
-
-
-class IterateGurobiGen(SamplingStrategy):
+class IterateGurobiGen(Gen):
 
     @staticmethod
     def class_name():
@@ -25,5 +23,5 @@ class IterateGurobiGen(SamplingStrategy):
 
         # TODO: see minimum_trials edge case from unigen.py if that problem occurs
 
-        result = list(map(lambda s: SamplingStrategy.decode(block, s.assignment), solutions))
+        result = list(map(lambda s: Gen.decode(block, s.assignment), solutions))
         return SamplingResult(result, {})
