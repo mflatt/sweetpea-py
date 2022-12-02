@@ -6,7 +6,7 @@ from itertools import permutations
 from sweetpea._internal.primitive import Factor, DerivedLevel, WithinTrial, Transition
 from sweetpea._internal.constraint import AtMostKInARow
 from sweetpea._internal.encoding_diagram import print_encoding_diagram
-from sweetpea import CrossBlock, synthesize_trials, print_experiments, NonUniformGen
+from sweetpea import CrossBlock, synthesize_trials, print_experiments, IterateGen
 from sweetpea._internal.server import build_cnf
 from acceptance import path_to_cnf_files, reset_expected_solutions
 
@@ -36,7 +36,7 @@ def test_correct_solution_count_when_unconstrained(design):
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 500, NonUniformGen)
+    experiments  = synthesize_trials(block, 500, IterateGen)
 
     assert len(experiments) == 384
 
@@ -47,7 +47,7 @@ def test_correct_solution_count_when_constrained(design):
     constraints = [AtMostKInARow(1, congruent_factor)]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 500, NonUniformGen)
+    experiments  = synthesize_trials(block, 500, IterateGen)
 
     assert len(experiments) == 128
 
@@ -58,7 +58,7 @@ def test_correct_solution_count_when_transition_in_crossing_and_unconstrained(de
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 96
 
@@ -69,7 +69,7 @@ def test_correct_solution_count_when_transition_in_crossing_and_constrained(desi
     constraints = [AtMostKInARow(1, (color, "red"))]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 32
 
@@ -96,6 +96,6 @@ def test_correct_solution_count_when_crossing_with_derived_transition(design):
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 4

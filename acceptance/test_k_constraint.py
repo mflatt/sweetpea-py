@@ -14,7 +14,7 @@ down = direction.get_level('down')
 right = direction.get_level('right')
 left = direction.get_level('left')
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('constraints_and_solutions',
                          # only way this works is red, blue, blue, red; solutions: 4
                          [[[AtMostKInARow(1, (color, red)), AtLeastKInARow(2, (color, blue))], 4],
@@ -34,7 +34,7 @@ def test_check_constraints_on_crossing_factor(strategy, constraints_and_solution
 
     assert len(experiments) == solutions
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('constraints_and_solutions',
                          [[[ExactlyK(3, (direction, up)), ExactlyK(1, (direction, right))], 96],
                           [[ExactlyK(4, (direction, up))], 24],

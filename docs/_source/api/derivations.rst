@@ -15,11 +15,11 @@ as long as other levels in the same factor have compatible derivations.
 
    Abstract class representing a derived-level specification.
            
-.. function:: sweetpea.WithinTrial(predicate, factors)
+.. class:: sweetpea.WithinTrial(predicate, factors)
 
               Describes a level that is selected depending on levels
               from other factors, all within the same trial. The level
-              is equivalent to one created via :func:`.Window` with a
+              is equivalent to one created via :class:`.Window` with a
               window width of 1 and a stride of 1.
 
               The factors that the level depends on can be non-derived
@@ -38,15 +38,15 @@ as long as other levels in the same factor have compatible derivations.
               :type factors: List(Factor)
               :rtype: Derivation
 
-.. function:: sweetpea.Transition(predicate, factors)
+.. class:: sweetpea.Transition(predicate, factors)
 
               Describes a level that is selected depending on a
               combination of levels from other factors in the current
               trial and the immediately preceding trial. The level
-              is equivalent to one created via :func:`.Window` with a
+              is equivalent to one created via :class:`.Window` with a
               window width of 2 and a stride of 1.
 
-              The same as for :func:`.WithinTrial`, any derived factor
+              The same as for :class:`.WithinTrial`, any derived factor
               in `factors` must not have a window stride greater
               than 1.
 
@@ -66,13 +66,13 @@ as long as other levels in the same factor have compatible derivations.
               :type factors: List(Factor)
               :rtype: Derivation
 
-.. function:: sweetpea.Window(predicate, factors, width, stride, start)
+.. class:: sweetpea.Window(predicate, factors, width, stride, start)
 
               Creates a level that is selected depending on a
               combination of levels from other factors in the current
               trial and multiple preceding trials.
 
-              This function generalizes :class:`.WithinTrial` and
+              This class generalizes :class:`.WithinTrial` and
               :class:`.Transition` to select a level depending on
               `width` consecutive trials, and where trials that are
               assigned a level value are separated by `stride`-1
@@ -80,7 +80,7 @@ as long as other levels in the same factor have compatible derivations.
               trial to override the default computation of a starting
               trial.
 
-              The same as for :func:`.WithinTrial`, any derived factor
+              The same as for :class:`.WithinTrial`, any derived factor
               in `factors` must not have a window stride greater
               than 1.
 

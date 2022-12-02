@@ -58,7 +58,7 @@ def test_that_design_is_correctly_constrained(design):
     ]
 
     block = CrossBlock(design, crossing, constraints)
-    experiments = synthesize_trials(block, 100, IterateGen)
+    experiments = synthesize_trials(block, 100)
 
     assert len(experiments) == 100, "Design: %s" % str(list(map(lambda f: f.factor_name, design)))
     for c in constraints:

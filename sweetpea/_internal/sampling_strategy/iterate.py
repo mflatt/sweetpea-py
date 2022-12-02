@@ -1,31 +1,22 @@
-from typing import List, cast
-
 from sweetpea._internal.sampling_strategy.base import Gen, SamplingResult
 from sweetpea._internal.block import Block
-from sweetpea._internal.core import CNF, sample_non_uniform
+from sweetpea._internal.sampling_strategy.iterate_sat import IterateSATGen
+from sweetpea._internal.sampling_strategy.random import RandomGen
 
 """
-This represents the non-uniform sampling strategy, in which we 'sample' just by using a SAT
-solver repeatedly to produce unique (but not uniform) samples.
+This represents a strategy where we "sample" just by using some
+solver repeatedly to produce unique (but not necessarily uniform) samples.
+A specific strategy is selected automatically.
 """
 class IterateGen(Gen):
-
+    
     @staticmethod
     def class_name():
-        return 'IterateGen'
+        return 'NonUniformGen'
 
     @staticmethod
     def sample(block: Block, sample_count: int) -> SamplingResult:
-        backend_request = block.build_backend_request()
-        if block.show_errors():
-            return SamplingResult([], {})
-
-        solutions = sample_non_uniform(sample_count,
-                                       CNF(backend_request.get_cnfs_as_json()),
-                                       backend_request.fresh - 1,
-                                       block.variables_per_sample(),
-                                       backend_request.get_requests_as_generation_requests())
-
-        result = list(map(lambda s: Gen.decode(block, s.assignment), solutions))
-        return SamplingResult(result, {})
-
+        if block.complex_factors_or_constraints:
+            return IterateSATGen.sample(block, sample_count)
+        else:
+            return RandomGen.sample(block, sample_count)

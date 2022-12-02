@@ -11,7 +11,7 @@ letter = Factor("letter", ["a", "b", "c"])
                           [-2, 2],
                           [100, 0],
                           [-100, 0]])
-@pytest.mark.parametrize('strategy', [IterateGen, RandomGen])
+@pytest.mark.parametrize('strategy', [IterateSATGen, RandomGen])
 def test_pin(index_and_solutions, strategy):
     index = index_and_solutions[0]
     solutions = index_and_solutions[1]

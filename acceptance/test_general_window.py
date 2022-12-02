@@ -24,7 +24,7 @@ def test_correct_solution_count_when_unconstrained(design):
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -37,7 +37,7 @@ def test_correct_solution_count_when_bookends_must_be_congruent(design):
     constraints = [Exclude(congruent_bookend, "no")]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 4
 
@@ -50,7 +50,7 @@ def test_correct_solution_count_when_bookends_must_not_be_congruent(design):
     constraints = [Exclude(congruent_bookend, "yes")]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 4
 
@@ -63,7 +63,7 @@ def test_correct_solution_count_when_bookends_must_not_match_each_other(design):
     constraints = [AtMostKInARow(1, congruent_bookend)]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 16
 

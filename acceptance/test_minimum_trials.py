@@ -9,7 +9,7 @@ congruency = Factor(name="congruency", initial_levels=["congruent", "incongruent
 design     = [correct_response, congruency]
 crossing   = [correct_response, congruency]
 
-@pytest.mark.parametrize('strategy', [IterateGen, RandomGen])
+@pytest.mark.parametrize('strategy', [IterateSATGen, RandomGen])
 @pytest.mark.parametrize('trial_count', [4, 5, 6, 7, 8])
 def test_stays_balanced(strategy, trial_count):
     crossing_size = 1
@@ -32,7 +32,7 @@ def test_stays_balanced(strategy, trial_count):
             to_go -= crossing_size
             cond = cond[crossing_size:]
 
-@pytest.mark.parametrize('strategy', [IterateGen, RandomGen])
+@pytest.mark.parametrize('strategy', [IterateSATGen, RandomGen])
 @pytest.mark.parametrize('trial_count', [4, 5, 6])
 def test_leftovers_balanced_across_all_possible_colutions(strategy, trial_count):
     block  = CrossBlock(design=design, crossing=crossing, constraints=[MinimumTrials(trials=trial_count)])

@@ -13,7 +13,7 @@ def test_ok_to_ask_for_more_trials_than_solutions(num_trials):
                               require_complete_crossing=False)
     experiments  = synthesize_trials(block, 1, sampling_strategy=RandomGen)
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_check_max_solutions(strategy):
     color      = Factor("color",  ["red", "green", "blue"])
     design       = [color]
@@ -34,7 +34,7 @@ def test_check_max_solutions(strategy):
     experiments  = synthesize_trials(block, 100, sampling_strategy=strategy)
     assert len(experiments) == 36
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_check_max_solutions_derived_factor(strategy):
     color = Factor("color", ['red', 'green'])
     size = Factor("size", ['small', 'med', 'large'])

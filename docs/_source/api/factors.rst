@@ -40,7 +40,7 @@ Factors and Levels
                 :returns: a level with the given name
                 :rtype: Level
 
-              .. method:: levels()
+              .. property:: levels
 
                 Returns the factor's levels.
 
@@ -70,7 +70,7 @@ Factors and Levels
 
               For a non-derived level whose factor is not crossed (or,
               more generally, is not in all crossings in a
-              :func:`.MultiCrossBlock`), a `weight` value has the same
+              :class:`.MultiCrossBlock`), a `weight` value has the same
               effect as duplicating the level's name. That is, the
               would-be copies are treated as distinct, which means
               that sampling with replacement is biased toward levels
@@ -85,7 +85,16 @@ Factors and Levels
 
               .. property:: name
 
-                 The level's name, which can be any kind of value.
+                The level's name, which can be any kind of value.
+
+              .. property:: factor
+
+                Returns the level's factor. This property exists only
+                for a :class:`.Level` object that is extracted from a
+                :class:`.Factor` object.
+
+                :returns: a factor
+                :rtype: Factor
 
 
 .. class:: sweetpea.DerivedLevel(name, derivation, weight=1)

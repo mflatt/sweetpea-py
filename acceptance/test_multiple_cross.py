@@ -28,7 +28,7 @@ repeated_text_factor = Factor("repeated text?", [
     DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[1], [text]))
 ])
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('add_transition', [False, True])
 def test_correct_solutions_with_different_crossing_sizes(strategy, add_transition):
     mix   = Factor("mix",  ["cake", "concrete", "tape"])
@@ -69,7 +69,7 @@ def test_correct_solutions_with_different_crossing_sizes(strategy, add_transitio
                 assert key not in seen
                 seen[key] = True
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix], 6))
 def test_correct_solution_count(strategy, design):
     crossing = [[color, mix], [text, mix]]
@@ -81,7 +81,7 @@ def test_correct_solution_count(strategy, design):
     assert len(experiments) == 96
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, con_factor], 6))
 def test_correct_solution_count_with_congruence_factor_but_unconstrained(strategy, design):
     crossing = [[color, text], [text, mix]]
@@ -93,7 +93,7 @@ def test_correct_solution_count_with_congruence_factor_but_unconstrained(strateg
     assert len(experiments) == 96
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, con_factor], 6))
 def test_correct_solution_count_with_congruence_factor_and_constrained(strategy, design):
     crossing = [[color, text], [text, mix]]
@@ -121,7 +121,7 @@ def test_correct_solution_count_with_congruence_factor_and_constrained_cnf(desig
     assert old_cnf == cnf.as_unigen_string()
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, con_factor], 6))
 def test_correct_solution_count_with_congruence_factor_and_constrained_exactly(strategy, design):
     crossing = [[color, text], [text, mix]]
@@ -148,7 +148,7 @@ def test_correct_solution_count_with_congruence_factor_and_constrained_exactly_c
 
     assert old_cnf == cnf.as_unigen_string()
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor], 6))
 def test_correct_solution_count_with_repeated_color_factor_but_unconstrained(strategy, design):
     crossing = [[color, text], [text, mix]]
@@ -159,7 +159,7 @@ def test_correct_solution_count_with_repeated_color_factor_but_unconstrained(str
 
     assert len(experiments) == 96
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor], 6))
 def test_correct_solution_count_with_repeated_color_factor_and_constrained(strategy, design):
     crossing = [[color, text], [mix, text]]
@@ -172,7 +172,7 @@ def test_correct_solution_count_with_repeated_color_factor_and_constrained(strat
     # so the total should still be the same.
     assert len(experiments) == 96
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor, repeated_text_factor], 6))
 def test_correct_solution_count_with_repeated_color_and_text_factors_but_unconstrained(strategy, design):
     crossing = [[color, text], [mix, text]]
@@ -184,7 +184,7 @@ def test_correct_solution_count_with_repeated_color_and_text_factors_but_unconst
     assert len(experiments) == 96
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor, repeated_text_factor], 6))
 def test_correct_solution_count_with_repeated_color_and_text_factors_and_constrained(strategy, design):
     crossing = [[color, text], [mix, text]]
@@ -199,7 +199,7 @@ def test_correct_solution_count_with_repeated_color_and_text_factors_and_constra
     assert len(experiments) == 96
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 @pytest.mark.parametrize('design', shuffled_design_sample([color, text, mix, repeated_color_factor], 6))
 def test_correct_solution_count_with_repeated_color_factor_and_no_repetition_allowed(strategy, design):
     crossing = [[color, text], [mix, text]]

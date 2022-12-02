@@ -120,7 +120,6 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Derivations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constraints.html">Constraints</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sampling_strategies.html">Sampling Strategies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="legacy.html">Legacy</a></li>
 </ul>
 </li>
 </ul>
@@ -165,12 +164,12 @@ as long as other levels in the same factor have compatible derivations.</p>
 <dd><p>Abstract class representing a derived-level specification.</p>
 </dd></dl>
 
-<dl class="py function">
+<dl class="py class">
 <dt class="sig sig-object py" id="sweetpea.WithinTrial">
-<span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">WithinTrial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.WithinTrial" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">WithinTrial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.WithinTrial" title="Permalink to this definition"></a></dt>
 <dd><p>Describes a level that is selected depending on levels
 from other factors, all within the same trial. The level
-is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-func docutils literal notranslate"><span class="pre">Window()</span></code></a> with a
+is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></a> with a
 window width of 1 and a stride of 1.</p>
 <p>The factors that the level depends on can be non-derived
 or derived, but any derived factor in <cite>factors</cite> must not
@@ -194,15 +193,15 @@ selected</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py function">
+<dl class="py class">
 <dt class="sig sig-object py" id="sweetpea.Transition">
-<span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">Transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.Transition" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">Transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.Transition" title="Permalink to this definition"></a></dt>
 <dd><p>Describes a level that is selected depending on a
 combination of levels from other factors in the current
 trial and the immediately preceding trial. The level
-is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-func docutils literal notranslate"><span class="pre">Window()</span></code></a> with a
+is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></a> with a
 window width of 2 and a stride of 1.</p>
-<p>The same as for <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-func docutils literal notranslate"><span class="pre">WithinTrial()</span></code></a>, any derived factor
+<p>The same as for <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-class docutils literal notranslate"><span class="pre">WithinTrial</span></code></a>, any derived factor
 in <cite>factors</cite> must not have a window stride greater
 than 1.</p>
 <dl class="field-list simple">
@@ -228,20 +227,20 @@ the returned derivation is selected</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py function">
+<dl class="py class">
 <dt class="sig sig-object py" id="sweetpea.Window">
-<span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.Window" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.Window" title="Permalink to this definition"></a></dt>
 <dd><p>Creates a level that is selected depending on a
 combination of levels from other factors in the current
 trial and multiple preceding trials.</p>
-<p>This function generalizes <code class="xref py py-class docutils literal notranslate"><span class="pre">WithinTrial</span></code> and
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Transition</span></code> to select a level depending on
+<p>This class generalizes <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-class docutils literal notranslate"><span class="pre">WithinTrial</span></code></a> and
+<a class="reference internal" href="#sweetpea.Transition" title="sweetpea.Transition"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transition</span></code></a> to select a level depending on
 <cite>width</cite> consecutive trials, and where trials that are
 assigned a level value are separated by <cite>stride</cite>-1
 intervening trials. It also allows an initial <cite>start</cite>
 trial to override the default computation of a starting
 trial.</p>
-<p>The same as for <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-func docutils literal notranslate"><span class="pre">WithinTrial()</span></code></a>, any derived factor
+<p>The same as for <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-class docutils literal notranslate"><span class="pre">WithinTrial</span></code></a>, any derived factor
 in <cite>factors</cite> must not have a window stride greater
 than 1.</p>
 <dl class="field-list simple">
@@ -297,7 +296,7 @@ and indices</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, SweetPea Research Group.</p>
+    <p>&#169; Copyright 2022, SweetPea Research Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

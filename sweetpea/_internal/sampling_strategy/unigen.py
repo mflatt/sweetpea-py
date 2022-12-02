@@ -10,7 +10,7 @@ from sweetpea._internal.core import sample_uniform, CNF
 from sweetpea._internal.constraint import minimum_trials
 
 """
-This strategy relies fully on Unigen to produce the desired number of samples.
+This strategy relies UniGen to sample uniformly from possible solutions.
 """
 class UniGen(Gen):
 

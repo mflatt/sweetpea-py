@@ -9,7 +9,7 @@ def test_window_with_early_start():
 
     block = CrossBlock([color, flavor, redness], [flavor, redness], [])
 
-    i_experiments = synthesize_trials(block, 100, IterateGen)
+    i_experiments = synthesize_trials(block, 100, IterateSATGen)
     r_experiments = synthesize_trials(block, 100, RandomGen)
 
     assert len(i_experiments) == 64
@@ -31,7 +31,7 @@ def test_window_with_late_start():
 
     block = CrossBlock([color, redness], [color, redness], [])
 
-    i_experiments = synthesize_trials(block, 20, IterateGen)
+    i_experiments = synthesize_trials(block, 20, IterateSATGen)
     r_experiments = synthesize_trials(block, 20, RandomGen)
     assert len(i_experiments) == 1
     assert len(r_experiments) == 1

@@ -5,7 +5,7 @@ from itertools import permutations
 
 from sweetpea import Factor, DerivedLevel, WithinTrial, Transition
 from sweetpea import AtMostKInARow, ExactlyKInARow, Exclude
-from sweetpea import RandomGen, NonUniformGen
+from sweetpea import IterateGen
 from sweetpea import CrossBlock, synthesize_trials, synthesize_trials
 
 # Basic setup
@@ -37,7 +37,7 @@ def test_correct_solution_count(design):
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -48,7 +48,7 @@ def test_correct_solution_count_with_congruence_factor_but_unconstrained(design)
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -59,7 +59,7 @@ def test_correct_solution_count_with_congruence_factor_and_constrained(design):
     constraints = [AtMostKInARow(1, (con_factor, "con"))]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 12
 
@@ -70,7 +70,7 @@ def test_correct_solution_count_with_congruence_factor_and_constrained_exactly(d
     constraints = [ExactlyKInARow(2, con_factor)]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 8
 
@@ -81,7 +81,7 @@ def test_correct_solution_count_with_repeated_color_factor_but_unconstrained(des
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -92,7 +92,7 @@ def test_correct_solution_count_with_repeated_color_factor_and_constrained(desig
     constraints = [AtMostKInARow(1, (repeated_color_factor, "yes"))]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     # With only two colors, there can never be two color repetitions anyways,
     # so the total should still be the same.
@@ -105,7 +105,7 @@ def test_correct_solution_count_with_repeated_color_and_text_factors_but_unconst
     constraints = []
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -119,7 +119,7 @@ def test_correct_solution_count_with_repeated_color_and_text_factors_and_constra
     ]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 24
 
@@ -130,6 +130,6 @@ def test_correct_solution_count_with_repeated_color_factor_and_no_repetition_all
     constraints = [Exclude(repeated_color_factor, "yes")]
 
     block  = CrossBlock(design, crossing, constraints)
-    experiments  = synthesize_trials(block, 100, NonUniformGen)
+    experiments  = synthesize_trials(block, 100, IterateGen)
 
     assert len(experiments) == 8

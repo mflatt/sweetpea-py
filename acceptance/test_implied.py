@@ -10,7 +10,7 @@ def test_implied_within_trial():
     ])
 
     block      = CrossBlock([color, size, match], crossing=[color, size], constraints=[])
-    experiments = synthesize_trials(block=block, samples=4, sampling_strategy=IterateGen)
+    experiments = synthesize_trials(block=block, samples=4)
 
     assert len(experiments) == 4
     assert len(experiments[0]["color"]) == 4
@@ -29,7 +29,7 @@ def test_implied_window():
     ])
 
     block      = CrossBlock([color, size, match], crossing=[color, size], constraints=[])
-    experiments = synthesize_trials(block=block, samples=4, sampling_strategy=IterateGen)
+    experiments = synthesize_trials(block=block, samples=4)
 
     assert len(experiments) == 4
     assert len(experiments[0]["color"]) == 4

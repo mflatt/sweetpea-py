@@ -25,7 +25,7 @@ design       = [color, word, stimulus_configuration]
 crossing     = [color, word]
 
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_no_solutions_without_override_flag(strategy):
     block       = CrossBlock(design, crossing, constraints)
     experiments = synthesize_trials(block, 500, sampling_strategy=strategy)
@@ -34,7 +34,7 @@ def test_no_solutions_without_override_flag(strategy):
     assert len(experiments) == 0
     assert_no_repetition(experiments)
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_override_flag(strategy):
     block       = CrossBlock(design, crossing, constraints, require_complete_crossing=False)
     experiments = synthesize_trials(block, 500, sampling_strategy=strategy)
@@ -43,7 +43,7 @@ def test_correct_solution_count_with_override_flag(strategy):
     assert len(experiments) == 120
     assert_no_repetition(experiments)  # FIXME
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_exclusion_via_complex_factor(strategy):
     def illegal_stimulus(color, word):
         return color[1] == "green" and word[1] == "blue"
@@ -66,7 +66,7 @@ def test_correct_solution_count_with_exclusion_via_complex_factor(strategy):
 
     assert len(experiments) == 120
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_exclusion_via_nested_complex_factor(strategy):
     def unhappy_stimulus(color, word):
         return color[1] == "green" and word[1] == "blue"
@@ -97,7 +97,7 @@ def test_correct_solution_count_with_exclusion_via_nested_complex_factor(strateg
 
     assert len(experiments) == 120
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_override_flag_and_multiple_trials_excluded(strategy):
     # With this constraint, there should only be ONE allowed crossing, and therefore one solution.
     constraints = [Exclude(stimulus_configuration, "legal")]
@@ -108,7 +108,7 @@ def test_correct_solution_count_with_override_flag_and_multiple_trials_excluded(
     assert len(experiments) == 1
     assert_no_repetition(experiments)
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_crossing_levels_excluded(strategy):
     color = Factor("color", ['red', 'green'])
     size = Factor("size", ['small', 'med', 'large'])
@@ -134,7 +134,7 @@ def test_correct_solution_count_with_crossing_levels_excluded(strategy):
         for l in e['color']:
             assert l != 'red'
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_design_levels_excluded(strategy):
     color = Factor("color", ['red', 'green'])
     size = Factor("size", ['small', 'med', 'large'])
@@ -160,7 +160,7 @@ def test_correct_solution_count_with_design_levels_excluded(strategy):
         for l in e['size']:
             assert l != 'large'
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_with_extra_crossing_factor(strategy):
     color      = Factor("color",  ["red", "green", "blue", "brown"])
     word       = Factor("word", ["Red", "Green", "Blue", "Brown"])
@@ -214,7 +214,7 @@ def test_correct_solution_with_extra_crossing_factor(strategy):
         assert not key in found
         found[key] = True
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_with_just_one_factor(strategy):
     color = Factor("color", ['red', 'green'])
     red = color.get_level('red')
@@ -241,7 +241,7 @@ def test_correct_solution_count_with_override_flag_and_multiple_trials_excluded_
 
     assert old_cnf == cnf.as_unigen_string()  # FIXME
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solutions_with_implicitly_excluded_crossing_due_to_derived_definition(strategy):
     def ugly_stimulus(color, word):
         return color == "green" and word == "red"

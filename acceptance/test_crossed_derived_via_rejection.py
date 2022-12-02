@@ -28,14 +28,14 @@ def check_crossed_derived_factor(strategy, design, solutions, constraints=[]):
     
     assert len(experiments) == solutions
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_check_small_crossed_derived_factor(strategy):
     check_crossed_derived_factor(strategy, [color, match2], 4)
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_check_big_crossed_derived_factor(strategy):
     check_crossed_derived_factor(strategy, [color, match2, match1], 16)
 
-@pytest.mark.parametrize('strategy', [RandomGen, IterateGen])
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_check_crossed_derived_factor_with_minimum_trials(strategy):
     check_crossed_derived_factor(strategy, [color, match2], 16, [MinimumTrials(8)])

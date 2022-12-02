@@ -31,10 +31,10 @@ N = 10
 experiments  = synthesize_trials(block, N, CMSGen)
 # Or:
 # experiments  = synthesize_trials(block, N, UniformGen)
-# experiments  = synthesize_trials(block, N, NonUniformGen)
-# experiments  = synthesize_trials(block, N, UniGen)
 # experiments  = synthesize_trials(block, N, IterateGen)
-# experiments  = synthesize_trials(block, N, IterateGurobiGen)
+# experiments  = synthesize_trials(block, N, UniGen)
+# experiments  = synthesize_trials(block, N, IterateSATGen)
+# experiments  = synthesize_trials(block, N, IterateILPGen)
 # experiments  = synthesize_trials(block, N, RandomGen)
 
 print_experiments(block, experiments)

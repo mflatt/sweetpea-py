@@ -17,9 +17,9 @@ __all__ = [
     'AtMostKInARow', 'AtLeastKInARow',
     'ExactlyKInARow',
 
-    'Gen', 'RandomGen', 'IterateGen', 
-    'CMSGen', 'UniGen', 'IterateGurobiGen',
-    'UniformGen', 'NonUniformGen'
+    'Gen', 'RandomGen', 'IterateSATGen', 
+    'CMSGen', 'UniGen', 'IterateILPGen',
+    'UniformGen', 'IterateGen'
 ]
 
 from functools import reduce
@@ -41,12 +41,12 @@ from sweetpea._internal.constraint import (
 )
 from sweetpea._internal.sampling_strategy.base import Gen
 from sweetpea._internal.sampling_strategy.uniform import UniformGen
-from sweetpea._internal.sampling_strategy.non_uniform import NonUniformGen
 from sweetpea._internal.sampling_strategy.iterate import IterateGen
+from sweetpea._internal.sampling_strategy.iterate_sat import IterateSATGen
 from sweetpea._internal.sampling_strategy.unigen import UniGen
 from sweetpea._internal.sampling_strategy.cmsgen import CMSGen
 from sweetpea._internal.sampling_strategy.random import RandomGen
-from sweetpea._internal.sampling_strategy.iterate_gurobi import IterateGurobiGen
+from sweetpea._internal.sampling_strategy.iterate_ilp import IterateILPGen
 from sweetpea._internal.server import build_cnf
 from sweetpea._internal.core.cnf import Var
 from sweetpea._internal.argcheck import argcheck, make_islistof
@@ -63,9 +63,7 @@ def _experiments_to_tuples(experiments: List[dict],
 
     :param experiments:
         A list of experiments as :class:`dicts <dict>`. These are produced by
-        calls to any of the synthesis functions (:func:`.synthesize_trials`,
-        :func:`.synthesize_trials_non_uniform`, or
-        :func:`.synthesize_trials_uniform`).
+        calls to the synthesis function :func:`.synthesize_trials`.
 
     :returns:
         A list of lists of tuples of strings, where each sub-list corresponds
@@ -98,9 +96,7 @@ def print_experiments(block: Block, experiments: List[dict]):
 
     :param experiments:
         A list of experiments as :class:`dicts <dict>`. These are produced by
-        calls to any of the synthesis functions (:func:`.synthesize_trials`,
-        :func:`.synthesize_trials_non_uniform`, or
-        :func:`.synthesize_trials_uniform`).
+        calls to synthesis function :func:`.synthesize_trials`.
     """
     nested_assignment_strs = [list(map(lambda l: cast(str, f.name) + " " + str(l.name), f.levels)) for f in __filter_hidden(block.design)]
     column_widths = list(map(lambda l: max(list(map(len, l))), nested_assignment_strs))
@@ -258,7 +254,7 @@ def save_experiments_csv(block: Block,
 
 def synthesize_trials(block: Block,
                       samples: int = 10,
-                      sampling_strategy = NonUniformGen
+                      sampling_strategy = IterateGen
                       ) -> List[dict]:
     """Given an experiment described with a :class:`.Block`, randomly generates
     multiple sets of trials for that experiment.
@@ -273,13 +269,6 @@ def synthesize_trials(block: Block,
     CNF formula that will be solved with Unigen. The result of this solution is
     then decoded into something that is both human-readable and compatible with
     `PsyNeuLink <https://princetonuniversity.github.io/PsyNeuLink/>`_.
-
-    .. warning::
-
-        Effective uniform sampling is a work in progress, so straightforward
-        use of this function may result in non-termination. If this happens,
-        you can try to get some initial results via
-        :func:`.synthesize_trials_non_uniform`.
 
     :param block:
         An experimental description as a :class:`.Block`.

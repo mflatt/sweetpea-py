@@ -6,7 +6,9 @@ from sweetpea._internal.block import Block
 
 
 """
-This strategy relies fully on CMSGen to produce the desired number of samples.
+This strategy relies CMSGen to sample from possible solutions in a way that
+might be uniform, with without a firm guarantee of uniformity, so that the
+lack of correlation would need to be checked independently.
 """
 class CMSGen(Gen):
     # The CMSGen API is similar to Unigen, so we piggy-back on that implementation.
