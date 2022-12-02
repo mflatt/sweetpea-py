@@ -6,7 +6,7 @@ Derivations
 A `Derivation` is identifies combinations of factor levels that select
 another level that is constructed with :class:`.DerivedLevel`. Derived
 levels for one factor must all have compatible derivations, which
-means that the must depend on the same factors in the same order, have
+means that they must depend on the same factors in the same order, have
 the same window width, same window stride, and the same starting
 trial. However, :class:`.ElseLevel` is compatible with any derivation,
 as long as other levels in the same factor have compatible derivations.
@@ -20,7 +20,7 @@ as long as other levels in the same factor have compatible derivations.
               Describes a level that is selected depending on levels
               from other factors, all within the same trial. The level
               is equivalent to one created via :class:`.Window` with a
-              window width of 1 and a stride of 1.
+              width of 1 and a stride of 1.
 
               The factors that the level depends on can be non-derived
               or derived, but any derived factor in `factors` must not
@@ -44,7 +44,7 @@ as long as other levels in the same factor have compatible derivations.
               combination of levels from other factors in the current
               trial and the immediately preceding trial. The level
               is equivalent to one created via :class:`.Window` with a
-              window width of 2 and a stride of 1.
+              width of 2 and a stride of 1.
 
               The same as for :class:`.WithinTrial`, any derived factor
               in `factors` must not have a window stride greater
@@ -115,8 +115,7 @@ as long as other levels in the same factor have compatible derivations.
                             if `start` combined with `width`
                             means that factors in `factors` will not
                             have a level for some trials, then `predicate` must handle
-                            `None` values in the corresponding arguments
-                            and indices
+                            `None` values for the corresponding dictionaries and keys
               :type start: int
               :type factors: List(Factor)
               :rtype: Derivation

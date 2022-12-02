@@ -162,6 +162,9 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">Exclude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.Exclude" title="Permalink to this definition"></a></dt>
 <dd><p>Constrains an experiment to disallow the specified
 level.</p>
+<p>An <a class="reference internal" href="#sweetpea.Exclude" title="sweetpea.Exclude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exclude</span></code></a> constraint can affect the number of
+trials that are included in a sequence. See
+<a class="reference internal" href="main.html#sweetpea.CrossBlock" title="sweetpea.CrossBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossBlock</span></code></a> for more information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>level</strong> (<em>Union</em><em>[</em><a class="reference internal" href="factors.html#sweetpea.Level" title="sweetpea.Level"><em>Level</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference internal" href="factors.html#sweetpea.Factor" title="sweetpea.Factor"><em>Factor</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><a class="reference internal" href="factors.html#sweetpea.Factor" title="sweetpea.Factor"><em>Factor</em></a><em>, </em><a class="reference internal" href="factors.html#sweetpea.Level" title="sweetpea.Level"><em>Level</em></a><em>]</em><em>]</em>) – either a level,
@@ -182,7 +185,7 @@ at the specified trial index. A negative trial index
 refers to a trial releative to the end of a sequence;
 for example, -1 refers to the last trial. If <cite>index</cite> is
 not in range for trials in an experiment, then the
-constraint will be unsatisfiable.</p>
+experiment will have no satisfying trial sequences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -201,8 +204,9 @@ or a tuple containing a factor and one of its levels</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="sweetpea.MinimumTrials">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">MinimumTrials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.MinimumTrials" title="Permalink to this definition"></a></dt>
-<dd><p>Constrains an experiment to set the specified number
-of minimum trials.</p>
+<dd><p>Constrains an experiment to set the specified number of
+minimum trials. See <a class="reference internal" href="main.html#sweetpea.CrossBlock" title="sweetpea.CrossBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossBlock</span></code></a> for more
+information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – minimum number of trials</p>
@@ -277,7 +281,10 @@ appears in exactly <cite>k</cite>-1 adjacent trials.</p>
 <dt class="sig sig-object py" id="sweetpea.ExactlyK">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sweetpea.</span></span><span class="sig-name descname"><span class="pre">ExactlyK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sweetpea.ExactlyK" title="Permalink to this definition"></a></dt>
 <dd><p>Constrains an experiment so that the level identified by
-<cite>level</cite> appears in exactly <cite>k</cite> trials.</p>
+<cite>level</cite> appears in exactly <cite>k</cite> trials. If this
+constraint is not consistent with requirements for
+crossing, the experiment will have no satisfying trial
+sequences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

@@ -159,7 +159,7 @@ of trials).</p>
 instance to mean the same sampling strategy as an instance
 with default arguments.</p>
 <p><em>Uniformity</em>: Different subclasses of <cite>Gen</cite> provide
-different guarantee about coverage of the space of possible
+different guarantees about coverage of the space of possible
 trial sequences. A guarantee of uniformity means that is a
 single trial sequence is requested via
 <a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a>, the generated sequence is chosen
@@ -167,7 +167,7 @@ randomly among all trial sequences that fit the constraints
 of the experiment definition, and all such trial sequences
 are eqaully likely to be reported.</p>
 <p><em>Replacement</em>: Different subclasses of <a class="reference internal" href="#sweetpea.Gen" title="sweetpea.Gen"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gen</span></code></a> provide
-different behavior when multiple trial sequences are
+different behaviors when multiple trial sequences are
 requested with a single call to <a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a>.
 Some strategies sample with replacement, producing
 independently chosen results. Others sample without
@@ -185,7 +185,7 @@ uniformity, a long as only one trial sequence is requested
 at a time.</p>
 <p><em>Unspecified Replacement</em>: Generating multiple trials
 sequences in a call to <a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a> may or
-may not produce indepedent results.</p>
+may not produce independent results.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -212,7 +212,7 @@ uniformity. Unfortunately, due to the difficulty of
 sampling with a guarantee, this stategy is unlikely to
 succeed for non-trial designs.</p>
 <p><em>Replacement</em>: Generating multiple trials in one call to
-<a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a> produces indepedent results. That
+<a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a> produces independent results. That
 is, the single call is the same as separate calls that each
 generate one sequence of trials.</p>
 </dd></dl>
@@ -226,7 +226,7 @@ detecting non-uniformity. This strategy may perform well in
 terms of sampling possible configurations, despite a having
 no formal guarantee of uniformity.</p>
 <p><em>Replacement</em>: Generating multiple trials in one call to
-<a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a> produces indepedent results. That
+<a class="reference internal" href="main.html#sweetpea.synthesize_trials" title="sweetpea.synthesize_trials"><code class="xref py py-func docutils literal notranslate"><span class="pre">synthesize_trials()</span></code></a> produces independent results. That
 is, the single call is the same as separate calls that each
 generate one sequence of trials.</p>
 </dd></dl>

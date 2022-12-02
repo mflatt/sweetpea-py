@@ -11,7 +11,7 @@ Factors and Levels
               :class:`.DerivedLevel` values. In the last case, the
               result is a *derived factor*. The `levels` list must
               either contain all derived levels or all values that are
-              not derived levels, and the levels must all use a
+              not derived levels, and derived levels must all use a
               compatible derivation as described in :ref:`derivations`.
               The names of the levels must be
               distinct; create a level with a weight to get the
@@ -61,8 +61,8 @@ Factors and Levels
               crossing, the `weight` crossing occurrences of the level
               are not considered distinct. Consequently, a sampling
               strategy without replacement (see :class:`.Gen`) will
-              produce fewer samples than it would for separate levels
-              that use the same name. Along similar lines, a
+              produce fewer samples than it would for separate levels.
+              Along similar lines, a
               :class:`.DerivedLevel` can have a weight greater than 1
               to affect crossings, but cannot be included in a level
               multiple times, because each derived level's predicate

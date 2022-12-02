@@ -13,7 +13,7 @@ Sampling Strategies
            with default arguments.
 
            *Uniformity*: Different subclasses of `Gen` provide
-           different guarantee about coverage of the space of possible
+           different guarantees about coverage of the space of possible
            trial sequences. A guarantee of uniformity means that is a
            single trial sequence is requested via
            :func:`.synthesize_trials`, the generated sequence is chosen
@@ -22,7 +22,7 @@ Sampling Strategies
            are eqaully likely to be reported.
 
            *Replacement*: Different subclasses of :class:`.Gen` provide
-           different behavior when multiple trial sequences are
+           different behaviors when multiple trial sequences are
            requested with a single call to :func:`.synthesize_trials`.
            Some strategies sample with replacement, producing
            independently chosen results. Others sample without
@@ -40,7 +40,7 @@ Sampling Strategies
 
            *Unspecified Replacement*: Generating multiple trials
            sequences in a call to :func:`.synthesize_trials` may or
-           may not produce indepedent results.
+           may not produce independent results.
 
 .. class:: sweetpea.IterateGen
 
@@ -66,7 +66,7 @@ Sampling Strategies
            succeed for non-trial designs.
 
            *Replacement*: Generating multiple trials in one call to
-           :func:`.synthesize_trials` produces indepedent results. That
+           :func:`.synthesize_trials` produces independent results. That
            is, the single call is the same as separate calls that each
            generate one sequence of trials.
 
@@ -79,7 +79,7 @@ Sampling Strategies
            no formal guarantee of uniformity.
 
            *Replacement*: Generating multiple trials in one call to
-           :func:`.synthesize_trials` produces indepedent results. That
+           :func:`.synthesize_trials` produces independent results. That
            is, the single call is the same as separate calls that each
            generate one sequence of trials.
 

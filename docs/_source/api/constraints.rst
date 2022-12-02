@@ -13,6 +13,10 @@ Constraints
               Constrains an experiment to disallow the specified
               level.
 
+              An :class:`.Exclude` constraint can affect the number of
+              trials that are included in a sequence. See
+              :class:`.CrossBlock` for more information.
+
               :param level: either a level,
                             a tuple containing a factor and the name of one of its levels,
                             or a tuple containing a factor and one of its levels
@@ -26,7 +30,7 @@ Constraints
               refers to a trial releative to the end of a sequence;
               for example, -1 refers to the last trial. If `index` is
               not in range for trials in an experiment, then the
-              constraint will be unsatisfiable.
+              experiment will have no satisfying trial sequences.
 
               :param index: a trial index, counting forward from 0 or backward from -1
               :type index: int
@@ -38,8 +42,9 @@ Constraints
 
 .. class:: sweetpea.MinimumTrials(k)
 
-              Constrains an experiment to set the specified number 
-              of minimum trials.
+              Constrains an experiment to set the specified number of
+              minimum trials. See :class:`.CrossBlock` for more
+              information.
 
               :param k: minimum number of trials
               :type k: int
@@ -89,7 +94,10 @@ Constraints
 .. class:: sweetpea.ExactlyK(k, level)
 
               Constrains an experiment so that the level identified by
-              `level` appears in exactly `k` trials.
+              `level` appears in exactly `k` trials. If this
+              constraint is not consistent with requirements for
+              crossing, the experiment will have no satisfying trial
+              sequences.
 
               :param k: the number of repetitions to require
               :type k: int

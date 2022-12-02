@@ -154,7 +154,7 @@
 <p>A <cite>Derivation</cite> is identifies combinations of factor levels that select
 another level that is constructed with <a class="reference internal" href="factors.html#sweetpea.DerivedLevel" title="sweetpea.DerivedLevel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DerivedLevel</span></code></a>. Derived
 levels for one factor must all have compatible derivations, which
-means that the must depend on the same factors in the same order, have
+means that they must depend on the same factors in the same order, have
 the same window width, same window stride, and the same starting
 trial. However, <a class="reference internal" href="factors.html#sweetpea.ElseLevel" title="sweetpea.ElseLevel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElseLevel</span></code></a> is compatible with any derivation,
 as long as other levels in the same factor have compatible derivations.</p>
@@ -170,7 +170,7 @@ as long as other levels in the same factor have compatible derivations.</p>
 <dd><p>Describes a level that is selected depending on levels
 from other factors, all within the same trial. The level
 is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></a> with a
-window width of 1 and a stride of 1.</p>
+width of 1 and a stride of 1.</p>
 <p>The factors that the level depends on can be non-derived
 or derived, but any derived factor in <cite>factors</cite> must not
 have a window stride greater than 1.</p>
@@ -200,7 +200,7 @@ selected</p></li>
 combination of levels from other factors in the current
 trial and the immediately preceding trial. The level
 is equivalent to one created via <a class="reference internal" href="#sweetpea.Window" title="sweetpea.Window"><code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></a> with a
-window width of 2 and a stride of 1.</p>
+width of 2 and a stride of 1.</p>
 <p>The same as for <a class="reference internal" href="#sweetpea.WithinTrial" title="sweetpea.WithinTrial"><code class="xref py py-class docutils literal notranslate"><span class="pre">WithinTrial</span></code></a>, any derived factor
 in <cite>factors</cite> must not have a window stride greater
 than 1.</p>
@@ -274,8 +274,7 @@ have a level for the trial and preceding <cite>width-1</cite> trials;
 if <cite>start</cite> combined with <cite>width</cite>
 means that factors in <cite>factors</cite> will not
 have a level for some trials, then <cite>predicate</cite> must handle
-<cite>None</cite> values in the corresponding arguments
-and indices</p></li>
+<cite>None</cite> values for the corresponding dictionaries and keys</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
