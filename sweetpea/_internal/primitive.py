@@ -741,7 +741,7 @@ class Window:
     width: int
 
     #: The stride of this window.
-    stride: int
+    stride: int = 1
 
     # The starting trial, if not automatic; 0-based
     start: Optional[int] = None

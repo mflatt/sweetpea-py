@@ -66,7 +66,7 @@ as long as other levels in the same factor have compatible derivations.
               :type factors: List(Factor)
               :rtype: Derivation
 
-.. class:: sweetpea.Window(predicate, factors, width, stride, start)
+.. class:: sweetpea.Window(predicate, factors, width, stride=1, start=None)
 
               Creates a level that is selected depending on a
               combination of levels from other factors in the current
@@ -105,7 +105,7 @@ as long as other levels in the same factor have compatible derivations.
                              skip between the trials that are
                              considered when selecting the new,
                              derived level
-              :type stride: Optional[int]
+              :type stride: int
               :param start: the first trail (counting from 0) that
                             the derivation's factor will have a level;
                             a `None` value (the default) means that the
@@ -116,6 +116,6 @@ as long as other levels in the same factor have compatible derivations.
                             means that factors in `factors` will not
                             have a level for some trials, then `predicate` must handle
                             `None` values for the corresponding dictionaries and keys
-              :type start: int
+              :type start: Optional[int]
               :type factors: List(Factor)
               :rtype: Derivation
