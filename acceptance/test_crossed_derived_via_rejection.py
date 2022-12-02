@@ -10,13 +10,13 @@ red = color.get_level('red')
 med = size.get_level('med')
 
 match2 = Factor(name="match2", initial_levels=[
-    DerivedLevel("up2", Window(lambda a: a[0] == 'red', [color], 3, 1)),
-    DerivedLevel("down2", Window(lambda a: a[0] != 'red', [color], 3, 1))
+    DerivedLevel("up2", Window(lambda a: a[-2] == 'red', [color], 3, 1)),
+    DerivedLevel("down2", Window(lambda a: a[-2] != 'red', [color], 3, 1))
 ])
 
 match1 = Factor(name="match1", initial_levels=[
-    DerivedLevel("up2", Window(lambda a: a[0] == 'red', [color], 2, 1)),
-    DerivedLevel("down2", Window(lambda a: a[0] != 'red', [color], 2, 1))
+    DerivedLevel("up2", Window(lambda a: a[-1] == 'red', [color], 2, 1)),
+    DerivedLevel("down2", Window(lambda a: a[-1] != 'red', [color], 2, 1))
 ])
 
 def check_crossed_derived_factor(strategy, design, solutions, constraints=[]):

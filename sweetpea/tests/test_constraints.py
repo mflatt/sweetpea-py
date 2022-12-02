@@ -18,13 +18,13 @@ inc_level  = DerivedLevel("inc", WithinTrial(op.ne, [color, text]))
 con_factor = Factor("congruent?", [con_level, inc_level])
 
 color_repeats_factor = Factor("color repeats?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 text_repeats_factor = Factor("text repeats?", [
-    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[1], [text])),
-    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[1], [text]))
+    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[-1], [text])),
+    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[-1], [text]))
 ])
 
 congruent_bookend = Factor("congruent bookend?", [
@@ -95,7 +95,7 @@ def test_consistency_with_multiple_transitions(design):
 def test_consistency_with_transition_first_and_uneven_level_lengths():
     color3 = Factor("color3", ["red", "blue", "green"])
 
-    yes_fn = lambda colors: colors[0] == colors[1] == colors[2]
+    yes_fn = lambda colors: colors[0] == colors[-1] == colors[-2]
     no_fn = lambda colors: not yes_fn(colors)
     color3_repeats_factor = Factor("color3 repeats?", [
         DerivedLevel("yes", Window(yes_fn, [color3], 3, 1)),
@@ -414,15 +414,15 @@ def test_derivation_with_multiple_transitions():
 def test_derivation_with_three_level_transition():
     f = Factor("f", ["a", "b", "c"])
     f_transition = Factor("transition", [
-        DerivedLevel("aa", Transition(lambda c: c[0] == "a" and c[1] == "a", [f])),
-        DerivedLevel("ab", Transition(lambda c: c[0] == "a" and c[1] == "b", [f])),
-        DerivedLevel("ac", Transition(lambda c: c[0] == "a" and c[1] == "c", [f])),
-        DerivedLevel("ba", Transition(lambda c: c[0] == "b" and c[1] == "a", [f])),
-        DerivedLevel("bb", Transition(lambda c: c[0] == "b" and c[1] == "b", [f])),
-        DerivedLevel("bc", Transition(lambda c: c[0] == "b" and c[1] == "c", [f])),
-        DerivedLevel("ca", Transition(lambda c: c[0] == "c" and c[1] == "a", [f])),
-        DerivedLevel("cb", Transition(lambda c: c[0] == "c" and c[1] == "b", [f])),
-        DerivedLevel("cc", Transition(lambda c: c[0] == "c" and c[1] == "c", [f])),
+        DerivedLevel("aa", Transition(lambda c: c[-1] == "a" and c[0] == "a", [f])),
+        DerivedLevel("ab", Transition(lambda c: c[-1] == "a" and c[0] == "b", [f])),
+        DerivedLevel("ac", Transition(lambda c: c[-1] == "a" and c[0] == "c", [f])),
+        DerivedLevel("ba", Transition(lambda c: c[-1] == "b" and c[0] == "a", [f])),
+        DerivedLevel("bb", Transition(lambda c: c[-1] == "b" and c[0] == "b", [f])),
+        DerivedLevel("bc", Transition(lambda c: c[-1] == "b" and c[0] == "c", [f])),
+        DerivedLevel("ca", Transition(lambda c: c[-1] == "c" and c[0] == "a", [f])),
+        DerivedLevel("cb", Transition(lambda c: c[-1] == "c" and c[0] == "b", [f])),
+        DerivedLevel("cc", Transition(lambda c: c[-1] == "c" and c[0] == "c", [f])),
     ])
 
     block = CrossBlock([f, f_transition], [f], [])
@@ -722,8 +722,8 @@ def test_exclude_with_three_derived_levels():
 
     def count_diff(colors, texts):
         changes = 0
-        if (colors[0] != colors[1]): changes += 1
-        if (texts[0] != texts[1]): changes += 1
+        if (colors[0] != colors[-1]): changes += 1
+        if (texts[0] != texts[-1]): changes += 1
         return changes
 
     def make_k_diff_level(k):

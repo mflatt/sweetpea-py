@@ -18,13 +18,13 @@ inc_level  = DerivedLevel("inc", WithinTrial(op.ne, [color, text]))
 con_factor = Factor("congruent?", [con_level, inc_level])
 
 color_repeats_factor = Factor("color repeats?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 text_repeats_factor = Factor("text repeats?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [text])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [text]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [text])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [text]))
 ])
 
 congruent_bookend = Factor("congruent bookend?", [

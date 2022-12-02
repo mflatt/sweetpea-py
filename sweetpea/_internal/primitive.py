@@ -15,7 +15,7 @@ from itertools import product, chain
 from random import randint
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
-from sweetpea._internal.iter import chunk_list
+from sweetpea._internal.iter import chunk_dict
 from sweetpea._internal.beforestart import BeforeStart
 
 
@@ -246,7 +246,7 @@ class DerivedLevel(Level):
                 else:
                     args.append(None)
         if window.width > 1:
-            args = list(chunk_list(args, window.width))
+            args = list(chunk_dict(args, window.width))
         return args
 
     def __repr__(self) -> str:

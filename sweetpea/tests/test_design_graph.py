@@ -18,14 +18,14 @@ congruent = Factor("congruent?", [
 
 # Repeated color factor
 repeated_color_factor = Factor("repeated color?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 # Repeated text factor
 repeated_text_factor = Factor("repeated text?", [
-    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[1], [text])),
-    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[1], [text]))
+    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[-1], [text])),
+    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[-1], [text]))
 ])
 
 

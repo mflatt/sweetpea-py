@@ -207,13 +207,13 @@ than 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>predicate</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>]</em>) – a function that takes as many level
-lists as factors in <cite>factors</cite>; in each
-list, the first element (at index 0)
-is the level value for the previous
-trial, and the second element is the
+<li><p><strong>predicate</strong> (<em>Callable</em><em>[</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>]</em>) – a function that takes as many level
+dictionaries as factors in <cite>factors</cite>; in each
+dictionary, <code class="docutils literal notranslate"><span class="pre">-1</span></code> is mapped
+to the level value for the previous
+trial, and <code class="docutils literal notranslate"><span class="pre">0</span></code> is mapped to the
 level value for the current trial; the
-function should returns true if the
+function should return true if the
 combination of levels implies the
 result derivation</p></li>
 <li><p><strong>factors</strong> (<em>List</em><em>(</em><a class="reference internal" href="factors.html#sweetpea.Factor" title="sweetpea.Factor"><em>Factor</em></a><em>)</em>) – a list of factors whose levels across
@@ -246,12 +246,13 @@ than 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>predicate</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>]</em>) – a function that takes as many level
-lists as factors in <cite>factors</cite>; in each
-list, the first element (at index 0)
-is the level value for the earliest of
-<cite>width</cite> trials, and so on; the
-function should returns true if the
+<li><p><strong>predicate</strong> (<em>Callable</em><em>[</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>]</em>) – a function that takes as many level
+dictionaries as factors in <cite>factors</cite>; in each
+dictionary, <code class="docutils literal notranslate"><span class="pre">0</span></code> is mapped to the
+level value for the latest of
+<cite>width</cite> trials, and so on coutning backwards
+to <code class="docutils literal notranslate"><span class="pre">1-width</span></code>; the
+function should return true if the
 combination of levels implies this
 level</p></li>
 <li><p><strong>factors</strong> (<em>List</em><em>(</em><a class="reference internal" href="factors.html#sweetpea.Factor" title="sweetpea.Factor"><em>Factor</em></a><em>)</em>) – a list of factors whose levels across

@@ -24,8 +24,8 @@ def test_implied_within_trial():
 
 def test_implied_window():
     match = Factor(name="match", initial_levels=[
-        DerivedLevel(name="same", window=Window(lambda a: a[0] == a[1], [color], 2, 1)),
-        DerivedLevel(name="diff", window=Window(lambda a: a[0] != a[1], [color], 2, 1))
+        DerivedLevel(name="same", window=Window(lambda a: a[0] == a[-1], [color], 2, 1)),
+        DerivedLevel(name="diff", window=Window(lambda a: a[0] != a[-1], [color], 2, 1))
     ])
 
     block      = CrossBlock([color, size, match], crossing=[color, size], constraints=[])

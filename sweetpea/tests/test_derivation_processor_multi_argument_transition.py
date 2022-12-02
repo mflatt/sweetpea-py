@@ -13,10 +13,10 @@ text  = Factor("text",  color_list)
 
 
 def one_different(colors, texts):
-    if (colors[0] == colors[1]):
-        return texts[0] != texts[1]
+    if (colors[0] == colors[-1]):
+        return texts[0] != texts[-1]
     else:
-        return texts[0] == texts[1]
+        return texts[0] == texts[-1]
 
 def other_different(colors, texts):
     return not one_different(colors, texts)

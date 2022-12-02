@@ -46,7 +46,7 @@ def test_correct_solution_count_with_override_flag(strategy):
 @pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_exclusion_via_complex_factor(strategy):
     def illegal_stimulus(color, word):
-        return color[1] == "green" and word[1] == "blue"
+        return color[0] == "green" and word[0] == "blue"
     def legal_stimulus(color, word):
         return not illegal_stimulus(color, word)
 
@@ -69,7 +69,7 @@ def test_correct_solution_count_with_exclusion_via_complex_factor(strategy):
 @pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
 def test_correct_solution_count_with_exclusion_via_nested_complex_factor(strategy):
     def unhappy_stimulus(color, word):
-        return color[1] == "green" and word[1] == "blue"
+        return color[0] == "green" and word[0] == "blue"
     def happy_stimulus(color, word):
         return not unhappy_stimulus(color, word)
     smiley = Factor("smiley", [
@@ -254,7 +254,7 @@ def test_correct_solutions_with_implicitly_excluded_crossing_due_to_derived_defi
 
 
     def unhappy_stimulus(color, word):
-        return color[1] == "green" and word[1] == "blue"
+        return color[0] == "green" and word[0] == "blue"
     def happy_stimulus(color, word):
         return not unhappy_stimulus(color, word)
     smiley = Factor("smiley", [

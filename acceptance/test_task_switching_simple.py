@@ -36,14 +36,14 @@ congruency = Factor("congruency", [
 
 # Task Transition
 task_transition = Factor("task Transition", [
-    DerivedLevel("repeat", Transition(lambda tasks: tasks[0] == tasks[1], [task])),
-    DerivedLevel("switch", Transition(lambda tasks: tasks[0] != tasks[1], [task]))
+    DerivedLevel("repeat", Transition(lambda tasks: tasks[0] == tasks[-1], [task])),
+    DerivedLevel("switch", Transition(lambda tasks: tasks[0] != tasks[-1], [task]))
 ])
 
 # Response Transition
 response_transition = Factor("response Transition", [
-    DerivedLevel("repeat", Transition(lambda responses: responses[0] == responses[1], [response])),
-    DerivedLevel("switch", Transition(lambda responses: responses[0] != responses[1], [response]))
+    DerivedLevel("repeat", Transition(lambda responses: responses[0] == responses[-1], [response])),
+    DerivedLevel("switch", Transition(lambda responses: responses[0] != responses[-1], [response]))
 ])
 
 

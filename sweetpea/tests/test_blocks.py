@@ -24,16 +24,16 @@ inc_level  = DerivedLevel("inc", WithinTrial(op.ne, [color, text]))
 con_factor = Factor("congruent?", [con_level, inc_level])
 
 color_repeats_factor = Factor("repeated color?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 yes_color_repeats = color_repeats_factor["yes"]
 no_color_repeats = color_repeats_factor["no"]
 
 text_repeats_factor = Factor("repeated text?", [
-    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[1], [text])),
-    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[1], [text]))
+    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[-1], [text])),
+    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[-1], [text]))
 ])
 
 yes_text_repeats = text_repeats_factor["yes"]
@@ -49,7 +49,7 @@ no_congruent = congruent_bookend["no"]
 
 color3 = Factor("color3", ["red", "blue", "green"])
 
-yes_fn = lambda colors: colors[0] == colors[1] == colors[2]
+yes_fn = lambda colors: colors[0] == colors[-1] == colors[-2]
 no_fn = lambda colors: not yes_fn(colors)
 color3_repeats_factor = Factor("color3 repeats?", [
     DerivedLevel("yes", Window(yes_fn, [color3], 3, 1)),
@@ -423,8 +423,8 @@ def test_build_variable_list_for_complex_factors():
 def test_build_variable_list_for_three_derived_levels():
     def count_diff(colors, texts):
         changes = 0
-        if (colors[0] != colors[1]): changes += 1
-        if (texts[0] != texts[1]): changes += 1
+        if (colors[0] != colors[-1]): changes += 1
+        if (texts[0] != texts[-1]): changes += 1
         return changes
 
     def make_k_diff_level(k):
@@ -465,15 +465,15 @@ def test_crossing_size_with_complex_excludes():
     task              = Factor("task", ["color task", "movement task", "orientation task"])
 
     def A_B_A(tasks):
-        return (tasks[0] == tasks[2]) and (tasks[0] != tasks[1])
+        return (tasks[-2] == tasks[0]) and (tasks[-2] != tasks[-1])
     def A_B_C(tasks):
-        return (tasks[0] != tasks[2]) and (tasks[0] != tasks[1]) and (tasks[1] != tasks[2])
+        return (tasks[-2] != tasks[0]) and (tasks[-2] != tasks[-1]) and (tasks[-1] != tasks[0])
     def A_A_B(tasks):
-        return (tasks[0] == tasks[1]) and (tasks[1] != tasks[2])
+        return (tasks[-2] == tasks[-1]) and (tasks[-1] != tasks[0])
     def A_A_A(tasks):
-        return (tasks[0] == tasks[1]) and (tasks[1] == tasks[2])
+        return (tasks[-2] == tasks[-1]) and (tasks[-1] == tasks[0])
     def A_B_B(tasks):
-        return (tasks[0] != tasks[1]) and (tasks[1] == tasks[2])
+        return (tasks[-2] != tasks[-1]) and (tasks[-1] == tasks[0])
     def invalid_transition(tasks):
         return A_A_B(tasks) or A_A_A(tasks) or A_B_B(tasks)
 

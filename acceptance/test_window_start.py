@@ -4,7 +4,7 @@ def test_window_with_early_start():
     color = Factor("color", ["red", "green", "blue"])
     flavor = Factor("flavor", ["mild", "spicy"])
     redness = Factor("redness",
-                     [DerivedLevel("ruddy", Window(lambda c: (c[0] != "red" and c[1] == "red"), [color], 2, 1, 0)),
+                     [DerivedLevel("ruddy", Window(lambda c: (c[-1] != "red" and c[0] == "red"), [color], 2, 1, 0)),
                       ElseLevel("plain")])
 
     block = CrossBlock([color, flavor, redness], [flavor, redness], [])

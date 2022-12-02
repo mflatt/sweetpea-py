@@ -15,13 +15,13 @@ inc_level  = DerivedLevel("inc", WithinTrial(op.ne, [color, text]))
 con_factor = Factor("congruent?", [con_level, inc_level])
 
 color_repeats_factor = Factor("color repeats?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 text_repeats_factor = Factor("text repeats?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [text])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [text]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [text])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [text]))
 ])
 
 design = [color, text, con_factor]
@@ -98,7 +98,7 @@ def test_generate_encoding_diagram_with_constraint_and_multiple_transitions_in_d
 def test_generate_encoding_diagram_with_windows():
     color3 = Factor("color3", ["red", "blue", "green"])
 
-    yes_fn = lambda colors: colors[0] == colors[1] == colors[2]
+    yes_fn = lambda colors: colors[0] == colors[-1] == colors[-2]
     no_fn = lambda colors: not yes_fn(colors)
     color3_repeats_factor = Factor("color3 repeats?", [
         DerivedLevel("yes", Window(yes_fn, [color3], 3, 1)),

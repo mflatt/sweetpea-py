@@ -18,13 +18,13 @@ inc_level  = DerivedLevel("inc", WithinTrial(op.ne, [color, text]))
 con_factor = Factor("congruent?", [con_level, inc_level])
 
 color_repeats_factor = Factor("repeated color?", [
-    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color])),
-    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[1], [color]))
+    DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color])),
+    DerivedLevel("no",  Transition(lambda colors: colors[0] != colors[-1], [color]))
 ])
 
 text_repeats_factor = Factor("repeated text?", [
-    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[1], [text])),
-    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[1], [text]))
+    DerivedLevel("yes", Transition(lambda texts: texts[0] == texts[-1], [text])),
+    DerivedLevel("no",  Transition(lambda texts: texts[0] != texts[-1], [text]))
 ])
 
 congruent_bookend = Factor("congruent bookend?", [
@@ -158,23 +158,23 @@ def test_generate_argument_list_with_within_trial():
 
 
 def test_generate_argument_list_with_transition():
-    color_repeats_level = DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[1], [color]))
+    color_repeats_level = DerivedLevel("yes", Transition(lambda colors: colors[0] == colors[-1], [color]))
     x_product = color_repeats_level.get_dependent_cross_product()
 
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[0]) == [['red', 'red']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[1]) == [['red', 'blue']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[2]) == [['blue', 'red']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[3]) == [['blue', 'blue']]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[0]) == [{-1: 'red', 0: 'red'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[1]) == [{-1: 'red', 0: 'blue'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[2]) == [{-1: 'blue', 0: 'red'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[3]) == [{-1: 'blue', 0: 'blue'}]
 
     double_repeat_level = DerivedLevel("name", Transition(lambda colors, texts: True, [color, text]))
     x_product = double_repeat_level.get_dependent_cross_product()
 
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[0]) == [['red', 'red'], ['red', 'red']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[1]) == [['red', 'red'], ['red', 'blue']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[2]) == [['red', 'red'], ['blue', 'red']]
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[3]) == [['red', 'red'], ['blue', 'blue']]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[0]) == [{-1: 'red', 0: 'red'}, {-1: 'red', 0: 'red'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[1]) == [{-1: 'red', 0: 'red'}, {-1: 'red', 0: 'blue'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[2]) == [{-1: 'red', 0: 'red'}, {-1: 'blue', 0: 'red'}]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[3]) == [{-1: 'red', 0: 'red'}, {-1: 'blue', 0: 'blue'}]
 
-    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[15]) == [['blue', 'blue'], ['blue', 'blue']]
+    assert DerivationProcessor.generate_argument_list(color_repeats_level, x_product[15]) == [{-1: 'blue', 0: 'blue'}, {-1: 'blue', 0: 'blue'}]
 
 
 def test_shift_window():

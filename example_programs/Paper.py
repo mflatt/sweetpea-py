@@ -8,7 +8,7 @@ import operator
 from sweetpea import (
     Factor, DerivedLevel, WithinTrial, Transition,
     CrossBlock, AtMostKInARow,
-    synthesize_trials, NonUniformGen, RandomGen,
+    synthesize_trials, RandomGen,
     print_experiments
 )
 
@@ -26,10 +26,10 @@ one_con_at_a_time = AtMostKInARow(1, (congruence, congruent))
 
 
 def one_diff(colors, words):
-    if (colors[0] == colors[1]):
-        return words[0] != words[1]
+    if (colors[0] == colors[-1]):
+        return words[0] != words[-1]
     else:
-        return words[0] == words[1]
+        return words[0] == words[-1]
 
 def both_diff(colors, words):
     return not one_diff(colors, words)
@@ -40,7 +40,7 @@ changed = Factor("changed", [one, both])
 
 block        = CrossBlock([color,word,congruence,changed], [color,word,changed], [])
 
-experiments  = synthesize_trials(block, 1, NonUniformGen)
+experiments  = synthesize_trials(block, 1)
 
 # experiments  = synthesize_trials(block, 1, RandomGen)
 #

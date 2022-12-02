@@ -11,14 +11,14 @@ from acceptance import path_to_cnf_files, reset_expected_solutions
 
 congruency            = Factor("congruency", ["congruent", "incongruent", "neutral"])
 congruency_transition = Factor("congruency_transition", [
-    DerivedLevel("con-con", Transition(lambda c: c[0] == "congruent"   and c[1] == "congruent",   [congruency])),
-    DerivedLevel("con-inc", Transition(lambda c: c[0] == "congruent"   and c[1] == "incongruent", [congruency])),
-    DerivedLevel("con-ntr", Transition(lambda c: c[0] == "congruent"   and c[1] == "neutral",     [congruency])),
-    DerivedLevel("inc-con", Transition(lambda c: c[0] == "incongruent" and c[1] == "congruent",   [congruency])),
-    DerivedLevel("inc-inc", Transition(lambda c: c[0] == "incongruent" and c[1] == "incongruent", [congruency])),
-    DerivedLevel("inc-ntr", Transition(lambda c: c[0] == "incongruent" and c[1] == "neutral",     [congruency])),
-    DerivedLevel("ntr-con", Transition(lambda c: c[0] == "neutral"     and c[1] == "congruent",   [congruency])),
-    DerivedLevel("ntr-inc", Transition(lambda c: c[0] == "neutral"     and c[1] == "incongruent", [congruency])),
+    DerivedLevel("con-con", Transition(lambda c: c[-1] == "congruent"   and c[0] == "congruent",   [congruency])),
+    DerivedLevel("con-inc", Transition(lambda c: c[-1] == "congruent"   and c[0] == "incongruent", [congruency])),
+    DerivedLevel("con-ntr", Transition(lambda c: c[-1] == "congruent"   and c[0] == "neutral",     [congruency])),
+    DerivedLevel("inc-con", Transition(lambda c: c[-1] == "incongruent" and c[0] == "congruent",   [congruency])),
+    DerivedLevel("inc-inc", Transition(lambda c: c[-1] == "incongruent" and c[0] == "incongruent", [congruency])),
+    DerivedLevel("inc-ntr", Transition(lambda c: c[-1] == "incongruent" and c[0] == "neutral",     [congruency])),
+    DerivedLevel("ntr-con", Transition(lambda c: c[-1] == "neutral"     and c[0] == "congruent",   [congruency])),
+    DerivedLevel("ntr-inc", Transition(lambda c: c[-1] == "neutral"     and c[0] == "incongruent", [congruency])),
     ElseLevel("ntr-ntr")
 ])
 

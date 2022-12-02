@@ -48,8 +48,8 @@ def test_pin(index_and_solutions, strategy):
         trial_no = index if index >= 0 else len(e['number']) + index
         assert e['number'][trial_no] != 1.0
 
-    mood = Factor("mood", [DerivedLevel("up", Transition(lambda ns: ns[1] > ns[0], [number])),
-                           DerivedLevel("down", Transition(lambda ns: ns[1] < ns[0], [number]))])
+    mood = Factor("mood", [DerivedLevel("up", Transition(lambda ns: ns[0] > ns[-1], [number])),
+                           DerivedLevel("down", Transition(lambda ns: ns[0] < ns[-1], [number]))])
     t_index = index if index < 0 else index+1
     block = CrossBlock([number, mood], [number], [Pin(t_index, mood["up"])])
     experiments = synthesize_trials(block, 10, strategy)

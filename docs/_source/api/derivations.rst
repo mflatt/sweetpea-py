@@ -51,15 +51,15 @@ as long as other levels in the same factor have compatible derivations.
               than 1.
 
               :param predicate: a function that takes as many level
-                                lists as factors in `factors`; in each
-                                list, the first element (at index 0)
-                                is the level value for the previous
-                                trial, and the second element is the
+                                dictionaries as factors in `factors`; in each
+                                dictionary, ``-1`` is mapped
+                                to the level value for the previous
+                                trial, and ``0`` is mapped to the
                                 level value for the current trial; the
-                                function should returns true if the
+                                function should return true if the
                                 combination of levels implies the
                                 result derivation
-              :type predicate: Callable[[list, ...], bool]
+              :type predicate: Callable[[Dict[int, Any], ...], bool]
               :param factors: a list of factors whose levels across
                               trials determine whether a level with
                               the returned derivation is selected
@@ -85,14 +85,15 @@ as long as other levels in the same factor have compatible derivations.
               than 1.
 
               :param predicate: a function that takes as many level
-                                lists as factors in `factors`; in each
-                                list, the first element (at index 0)
-                                is the level value for the earliest of
-                                `width` trials, and so on; the
-                                function should returns true if the
+                                dictionaries as factors in `factors`; in each
+                                dictionary, ``0`` is mapped to the
+                                level value for the latest of
+                                `width` trials, and so on coutning backwards
+                                to ``1-width``; the
+                                function should return true if the
                                 combination of levels implies this
                                 level
-              :type predicate: Callable[[list, ...], bool]
+              :type predicate: Callable[[Dict[int, Any], ...], bool]
               :param factors: a list of factors whose levels across
                               trials determine whether a level with
                               the returned derivation is selected

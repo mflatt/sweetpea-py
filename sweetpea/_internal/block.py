@@ -17,7 +17,7 @@ from sweetpea._internal.primitive import (
 from sweetpea._internal.logic import to_cnf_tseitin
 from sweetpea._internal.base_constraint import Constraint
 from sweetpea._internal.design_graph import DesignGraph
-from sweetpea._internal.iter import chunk_list
+from sweetpea._internal.iter import chunk_dict
 from sweetpea._internal.weight import combination_weight
 from sweetpea._internal.argcheck import argcheck, make_islistof
 
@@ -401,7 +401,7 @@ class Block:
                                         else:
                                             args.append(None)
                                 if w.width > 1:
-                                    args = list(chunk_list(args, w.width))
+                                    args = list(chunk_dict(args, w.width))
                                 if w.predicate(*args):
                                     vals.append(l.name)
                             else:
