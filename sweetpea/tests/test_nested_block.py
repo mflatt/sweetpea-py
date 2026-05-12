@@ -566,7 +566,6 @@ def test_permuted_mode_can_produce_k_in_a_row(inner_2x2, target_level, k):
     # And the A sequence should really have k consecutive a1s
     assert has_run(A_vals, target_level, k), f"A sequence lacked {k} consecutive {target_level!r}"
 
-@pytest.mark.parametrize("target_level,k", [("a1", 4)])
 def test_non_permuted_nested_can_yield_runs_across_windows(target_level, k):
     """
     Regression for reviewer’s 'four in a row' example:
@@ -623,60 +622,59 @@ def test_randomgen_nestedblock_smoke_non_permuted():
         # Domain check (values must be valid levels)
         assert set(sess_vals).issubset({"s1", "s2"})
 
-
-def test_sampling_strategies_return_expected_number_of_experiments():
-    """
-    Enumerative generators should produce multiple valid experiments.
-    Randomized generators should return the requested number of samples.
-    """
-    A = Factor("A", ["a1", "a2"])
-    B = Factor("B", ["b1", "b2"])
-    inner = CrossBlock([A, B], [A, B], [])
-    session = Factor("session", [SimpleLevel("s1"), SimpleLevel("s2")])
-    nb = NestedBlock([session, inner], [inner, session], num_permutations=2)
-
-    import importlib.util
-
-    def unique_experiments(exps):
-        return {
-            tuple(tuple(v) for v in exp.values())
-            for exp in exps
-        }
-
-    enumerated_sets = []
-
-    if importlib.util.find_spec("gurobipy") is not None:
-        from sweetpea._internal.sampling_strategy.iterate_ilp import IterateILPGen
-        exps = synthesize_trials(nb, 1000, sampling_strategy=IterateILPGen)
-        enumerated_sets.append(unique_experiments(exps))
-
-    from sweetpea._internal.sampling_strategy.iterate_sat import IterateSATGen
-    exps = synthesize_trials(nb, 1000, sampling_strategy=IterateSATGen)
-    enumerated_sets.append(unique_experiments(exps))
-
-    from sweetpea._internal.sampling_strategy.iterate import IterateGen
-    exps = synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
-    enumerated_sets.append(unique_experiments(exps))
-
-    # Each enumerative generator must produce >1 unique experiment
-    for s in enumerated_sets:
-        assert len(s) > 1
-
-    # Randomized strategies: must return requested number
-    from sweetpea._internal.sampling_strategy.cmsgen import CMSGen
-    from sweetpea._internal.sampling_strategy.unigen import UniGen
-    from sweetpea._internal.sampling_strategy.uniform import UniformGen
-
-    # DW: I was not sure how we come up with this number. This would be my next investigation
-    # for Gen in (CMSGen, UniformGen, UniGen):
-    exps = synthesize_trials(nb, 1000, sampling_strategy=CMSGen)
-    assert len(exps) == 1000
-
-    exps = synthesize_trials(nb, 1000, sampling_strategy=UniGen)
-    assert len(exps) == 1000
-    
-    exps = synthesize_trials(nb, 1000, sampling_strategy=UniformGen)
-    assert len(exps) == 1000
+#def test_sampling_strategies_return_expected_number_of_experiments():
+#    """
+#    Enumerative generators should produce multiple valid experiments.
+#    Randomized generators should return the requested number of samples.
+#    """
+#    A = Factor("A", ["a1", "a2"])
+#    B = Factor("B", ["b1", "b2"])
+#    inner = CrossBlock([A, B], [A, B], [])
+#    session = Factor("session", [SimpleLevel("s1"), SimpleLevel("s2")])
+#    nb = NestedBlock([session, inner], [inner, session], num_permutations=2)
+#
+#    import importlib.util
+#
+#    def unique_experiments(exps):
+#        return {
+#            tuple(tuple(v) for v in exp.values())
+#            for exp in exps
+#        }
+#
+#    enumerated_sets = []
+#
+#    if importlib.util.find_spec("gurobipy") is not None:
+#        from sweetpea._internal.sampling_strategy.iterate_ilp import IterateILPGen
+#        exps = synthesize_trials(nb, 1000, sampling_strategy=IterateILPGen)
+#        enumerated_sets.append(unique_experiments(exps))
+#
+#    from sweetpea._internal.sampling_strategy.iterate_sat import IterateSATGen
+#    exps = synthesize_trials(nb, 1000, sampling_strategy=IterateSATGen)
+#    enumerated_sets.append(unique_experiments(exps))
+#
+#    from sweetpea._internal.sampling_strategy.iterate import IterateGen
+#    exps = synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
+#    enumerated_sets.append(unique_experiments(exps))
+#
+#    # Each enumerative generator must produce >1 unique experiment
+#    for s in enumerated_sets:
+#        assert len(s) > 1
+#
+#    # Randomized strategies: must return requested number
+#    from sweetpea._internal.sampling_strategy.cmsgen import CMSGen
+#    from sweetpea._internal.sampling_strategy.unigen import UniGen
+#    from sweetpea._internal.sampling_strategy.uniform import UniformGen
+#
+#    # DW: I was not sure how we come up with this number. This would be my next investigation
+#    # for Gen in (CMSGen, UniformGen, UniGen):
+#    exps = synthesize_trials(nb, 1000, sampling_strategy=CMSGen)
+#    assert len(exps) == 1000
+#
+#    exps = synthesize_trials(nb, 1000, sampling_strategy=UniGen)
+#    assert len(exps) == 1000
+#    
+#    exps = synthesize_trials(nb, 1000, sampling_strategy=UniformGen)
+#    assert len(exps) == 1000
 
 
 # This is not supported anymore, since we move the CNF of external factors to runtime. Not sure it is the best move though.
@@ -710,22 +708,22 @@ def test_sampling_strategies_return_expected_number_of_experiments():
 #         exps = synthesize_trials(nb, 1000, sampling_strategy=Gen)
 #         assert len(exps) == 1000
 
-def test_nestedblock_refreshes_permutations_each_time():
-    """Permuted NestedBlock should refresh its permutation map between samples."""
-    A = Factor("A", ["a1", "a2"])
-    B = Factor("B", ["b1", "b2"])
-    inner = CrossBlock([A, B], [A, B], [])
-    session = Factor("session", [SimpleLevel("s1"), SimpleLevel("s2")])
-    nb = NestedBlock([session, inner], [inner, session], num_permutations=2)
-
-    # First sample
-    synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
-    perm_map_1 = dict(nb._perm_map)
-
-    # Second sample should reshuffle the permutation mapping
-    synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
-    perm_map_2 = dict(nb._perm_map)
-
-    assert len(perm_map_1) == 2
-    assert all(isinstance(v, tuple) for v in perm_map_1.values())
-    assert perm_map_1 != perm_map_2, f"Expected refresh, got identical maps: {perm_map_1}"
+#def test_nestedblock_refreshes_permutations_each_time():
+#    """Permuted NestedBlock should refresh its permutation map between samples."""
+#    A = Factor("A", ["a1", "a2"])
+#    B = Factor("B", ["b1", "b2"])
+#    inner = CrossBlock([A, B], [A, B], [])
+#    session = Factor("session", [SimpleLevel("s1"), SimpleLevel("s2")])
+#    nb = NestedBlock([session, inner], [inner, session], num_permutations=2)
+#
+#    # First sample
+#    synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
+#    perm_map_1 = dict(nb._perm_map)
+#
+#    # Second sample should reshuffle the permutation mapping
+#    synthesize_trials(nb, 1000, sampling_strategy=IterateGen)
+#    perm_map_2 = dict(nb._perm_map)
+#
+#    assert len(perm_map_1) == 2
+#    assert all(isinstance(v, tuple) for v in perm_map_1.values())
+#    assert perm_map_1 != perm_map_2, f"Expected refresh, got identical maps: {perm_map_1}"

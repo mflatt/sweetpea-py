@@ -139,9 +139,10 @@ class RandomGen(Gen):
             bad = 0
             run_length = enumerator._preamble_size + (rounds_per_run * enumerator.crossing_size) + leftover
             for i, c in enumerate(block.crossings):
-                if enumerator.has_crossed_complex_derived_factors or i > 0:
+                if enumerator.has_crossed_complex_derived_factors or i != enumerator._partitions.main_crossing:
                     start = enumerator.preamble_sizes[i]
                     c_weight = enumerator.crossing_weights[i]
+                    c_sustain = block.crossing_sustain_count(c)
                     c_crossing_size = enumerator.crossing_sizes[i] * c_weight
                     c_rounds_per_run = (run_length - start) // c_crossing_size
                     c_leftover = (run_length - start) % c_crossing_size
@@ -151,14 +152,14 @@ class RandomGen(Gen):
                     for round in range(c_rounds_per_run):
                         # if not conds_match_weights(start, start + crossing_size, True):
                         #     return True
-                        bad += combinations_mismatched_weights(start, start + c_crossing_size, c_weight, c, sample, False)
+                        bad += combinations_mismatched_weights(start, start + c_crossing_size, c_weight * c_sustain, c, sample, False)
                         if bad > acceptable_error:
                             return True
                         start += c_crossing_size
                     if c_leftover > 0:
                         # if not conds_match_weights(start, start + c_leftover, True):
                         #     return True
-                        bad += combinations_mismatched_weights(start, start + c_leftover, c_weight, c, sample, True)
+                        bad += combinations_mismatched_weights(start, start + c_leftover, c_weight * c_sustain, c, sample, True)
                         if bad > acceptable_error:
                             return True
         return False
@@ -209,12 +210,13 @@ class UCSolutionEnumerator():
         # we leave the other crossings to be treated as arbitrary
         # contraints).
         self._crossing_instances = self.__generate_crossing_instances()
+        main_crossing = self._partitions.main_crossing
 
         # Get the weight applied across all combinations in the
         # crossing --- which may be a result of a MinimumTrials
         # constraint that is greater than the number of different
         # combinations in the crossing, for example.
-        c_weight = block.crossing_weight(block.crossings[0])
+        c_weight = block.crossing_weight(block.crossings[main_crossing])
 
         # Increase weights for each specific combination based on
         # weights attached to the levels in the combination (as
@@ -268,10 +270,10 @@ class UCSolutionEnumerator():
         self.preamble_sizes = [block.preamble_size(c) for c in block.crossings]
         self.crossing_weights = [block.crossing_weight(c) for c in block.crossings]
         # Check that calculations from two sources agree:
-        assert self.crossing_sizes[0] * self.crossing_weights[0] == self.crossing_size
+        assert self.crossing_sizes[main_crossing] * self.crossing_weights[main_crossing] == self.crossing_size
 
         noncomplex_crossing_size = self.noncomplex_crossing_size
-        preamble_size = self.preamble_sizes[0]
+        preamble_size = self.preamble_sizes[main_crossing]
         self._preamble_size = preamble_size;
 
         # Call `__count_solutions` after everything else is set up.
@@ -310,8 +312,7 @@ class UCSolutionEnumerator():
     def crossing_instances_count(self):
         return len(self._crossing_instances)
 
-    def generate_random_samples(self, n: int, leftover: int, sampled: Dict[Tuple[int, ...], bool]) -> List[
-        Tuple[int, dict]]:
+    def generate_random_samples(self, n: int, leftover: int, sampled: Dict[Tuple[int, ...], bool]) -> List[Tuple[int, dict]]:
         # Select a collection of random numbers, each from the range of solutions.
         # If `leftover` is not zero, then tack on one more sequence that is shorter
         # than the crossing size.

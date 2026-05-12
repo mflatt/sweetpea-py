@@ -10,7 +10,7 @@ import inspect
 
 from sweetpea._internal.base_constraint import Constraint
 from sweetpea._internal.iter import chunk, chunk_list
-from sweetpea._internal.block import Block
+from sweetpea._internal.block import Block, BlockGeometry
 from sweetpea._internal.cross_block import MultiCrossBlockRepeat
 from sweetpea._internal.backend import LowLevelRequest, BackendRequest
 from sweetpea._internal.logic import If, Iff, And, Or, Not
@@ -134,13 +134,10 @@ class Cross(Constraint):
             crossing_size = block.crossing_size(c)
             preamble_size = block.preamble_size(c)
             crossing_weight = block.crossing_weight(c)
-            
+
             # Step 1a: Get a list of the trials that are involved in the crossing. That list
             # omits leading trials that will be present to initialize transitions, and the
             # number of trials may have been reduced by exclusions.
-            # crossing_trials = list(filter(lambda t: all(map(lambda f: f.applies_to_trial(t), c)),
-            #                               range(1, block.trials_per_sample() + 1)))
-            # Modify this to make it depend on block property and preamble_size instead of factor
             crossing_trials = list(range(1+preamble_size, block.trials_per_sample() + 1))
 
             # Step 1b: For each trial, cross all levels of all factors in the crossing.
@@ -154,7 +151,7 @@ class Cross(Constraint):
             # as tuple of CNF variables.
 
             # Step 2a: Allocate additional variables to represent each crossing in each trial.
-            num_state_vars = len(crossing_combinations) * len(crossing_combinations[0])
+            num_state_vars = len(crossing_trials) * len(crossing_combinations[0])
             state_vars = list(range(fresh, fresh + num_state_vars))
             fresh += num_state_vars
 
@@ -163,13 +160,13 @@ class Cross(Constraint):
             iffs = list(map(lambda n: Iff(state_vars[n], And([*flattened_combinations[n]])), range(len(state_vars))))
 
             # Step 2c: Get weight associated with each combination.
-            combination_weights = [combination_weight(tuple(c.values())) for c in trial_combinations]
+            sustain_count = block.sustain_count(c[0])
+            combination_weights = [combination_weight(tuple(c.values())) * sustain_count for c in trial_combinations]
 
             # Step 3: Constrain each crossing to occur exactly according to its weight time the
             # crossing weight in each `crossing_size * crossing_weight` set of trials, or at most
             # that much in a last set of trials that is less than `crossing_size * crossing_weight`
             # in length.
-
             states = list(chunk(state_vars, len(trial_combinations)))
             transposed = cast(List[List[int]], list(map(list, zip(*states))))
             reqss = map(lambda l, w: Cross.__add_weight_constraint(l, w, crossing_size, crossing_weight),
@@ -203,6 +200,41 @@ class Cross(Constraint):
 
     def potential_sample_conforms(self, sample: dict, block: Block) -> bool:
         # conformance by construction or direct checking in combinatoric
+        return True
+
+class Sustain(Constraint):
+    """A sustain constraint forces consecutive trials to have the same variable assignments"""
+
+    def validate(self, block: Block) -> None:
+        pass
+
+    @staticmethod
+    def apply(block: MultiCrossBlockRepeat, backend_request: BackendRequest) -> None:
+        iffs = []
+        for f in block.design:
+            sustain_count = block.sustain_count(f)
+            for l in f.levels:
+                varss = block.build_variable_lists((f, cast(Union[SimpleLevel, DerivedLevel], l)), None)
+                for vars in list(varss):
+                    for i in range(0, len(vars)):
+                        same_as_i = (i // sustain_count) * sustain_count
+                        iffs.append(Iff(vars[i], vars[same_as_i]))
+
+        (cnf, new_fresh) = block.cnf_fn(And(iffs), backend_request.fresh)
+        backend_request.cnfs.append(cnf)
+        backend_request.fresh = new_fresh
+
+    def potential_sample_conforms(self, sample: dict, block: Block) -> bool:
+        for f in block.design:
+            sustain_count = block.sustain_count(f)
+            if sustain_count > 1:
+                levels = sample[f]
+                for i in range(0, len(levels), sustain_count):
+                    if f.applies_to_trial(i//sustain_count + 1):
+                        level = levels[i]
+                        for j in range(1, sustain_count):
+                            if levels[i+j] != level:
+                                return False
         return True
 
 class Derivation(Constraint):
@@ -296,11 +328,12 @@ class Derivation(Constraint):
         trial_count = block.trials_per_sample()
         iffs = []
         f = self.factor
+        sustain_count = block.sustain_count(f)
         window = f.levels[0].window
-        t = 0
+        t = sustain_count-1
         delta = window.start_delta
-        for n in range(trial_count):
-            if not f.applies_to_trial(n + 1):
+        for n in range(0, trial_count, sustain_count):
+            if not f.applies_to_trial(n//sustain_count + 1):
                 continue
             num_levels = len(f.levels)
             get_trial_size = lambda x: trial_size if x < block.grid_variables() else len(block.decode_variable(x+1)[0].levels)
@@ -326,7 +359,7 @@ class Derivation(Constraint):
 
             or_clause = Or(ands)
             iffs.append(Iff(self.derived_idx + (t * num_levels) + 1, or_clause))
-            t += 1
+            t += sustain_count
         (cnf, new_fresh) = block.cnf_fn(And(iffs), backend_request.fresh)
 
         backend_request.cnfs.append(cnf)
@@ -352,7 +385,7 @@ class _KInARow(Constraint):
     def __init__(self, k, level):
         self.k = k
         self.level = level
-        self.within_block = False
+        self.within_block = cast(Optional[BlockGeometry], None)
         self.__validate()
 
     def __validate(self) -> None:
@@ -370,13 +403,13 @@ class _KInARow(Constraint):
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.level.get_factor(), self.level)
 
-    def set_within_block(self) -> None:
-        self.within_block = True
- 
-    # NEW:
-    def set_within_windows(self, window_len: int):
-        self._within_window_len = int(window_len)   # no within_block change
+    def init_within_block(self, within_block: BlockGeometry) -> None:
+        if self.within_block is None:
+            self.within_block = within_block
 
+    def sustain_within_block(self, sustain_count: int) -> None:
+        self.within_block = self.within_block.sustain(sustain_count)
+ 
     def uses_factor(self, f: Factor) -> bool:
         if isinstance(self.level, Factor):
             return self.level.uses_factor(f)
@@ -420,9 +453,7 @@ class _KInARow(Constraint):
         # use the original (global or repeat-scoped) behavior.
         window_len = cast(Optional[int], getattr(self, "_within_window_len", None))
 
-        # When window-scoped, we must not trigger the repeat-only path in build_variable_lists
-        base_within_block = self.within_block if window_len is None else False
-        var_lists = block.build_variable_lists(level, base_within_block)
+        var_lists = block.build_variable_lists(level, self.within_block)
 
         sublistss: List[List[List[int]]] = []
         for var_list in var_lists:
@@ -619,6 +650,13 @@ class ExactlyK(_KInARow):
     def _potential_counts_conform(self, counts: List[int]) -> bool:
         return sum(counts) == self.k
 
+    def init_within_block(self, within_block: BlockGeometry) -> None:
+        super().init_within_block(within_block)
+
+    def sustain_within_block(self, sustain_count: int) -> None:
+        super().sustain_within_block(sustain_count)
+        self.k *= sustain_count
+ 
 
 class ExactlyKInARow(_KInARow):
     """Requires that if the given level exists at all, it must exist in a
@@ -731,7 +769,7 @@ class ExactlyKMultipleInARow(_KInARow):
                 backend_request.cnfs.append(cnf)
 
         # Build lists (not repeat-scoped for window behavior)
-        base_var_lists = block.build_variable_lists(level, within_block=self.within_block if not hasattr(self, "_within_window_len") else False)
+        base_var_lists = block.build_variable_lists(level, within_block=self.within_block if not hasattr(self, "_within_window_len") else None)
 
 
         if hasattr(self, "_within_window_len"):
@@ -859,14 +897,18 @@ class Pin(Constraint):
         self.index = index
         self.factor = level.factor
         self.level = level
-        self.within_block = False
+        self.within_block = cast(Optional[BlockGeometry], False)
 
-    def set_within_block(self) -> None:
-        self.within_block = True
+    def init_within_block(self, within_block: BlockGeometry) -> None:
+        if self.within_block is False:
+            self.within_block = within_block
+
+    def sustain_within_block(self, sustain_count: int) -> None:
+        self.within_block = self.within_block.sustain(sustain_count)
 
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.factor, self.level)
-        if not block.get_trial_numbers(self.index):
+        if not block.get_trial_numbers(self.factor, self.index):
             num_trials = block.trials_per_sample()
             block.errors.add("WARNING: Pin constraint unsatisfiable, because "
                              + str(self.index) + " is out of range for " + str(num_trials) + " trials")
@@ -881,7 +923,8 @@ class Pin(Constraint):
         return [p]
 
     def apply(self, block: Block, backend_request: BackendRequest) -> None:
-        trial_nos = block.get_trial_numbers(self.index, self.within_block)
+        trial_nos = block.get_trial_numbers(self.factor, self.index, self.within_block)
+        print(self.within_block, trial_nos)
         if trial_nos:
             for trial_no in trial_nos:
                 var = block.get_variable(trial_no+1, (self.factor, self.level))
@@ -903,7 +946,7 @@ class Pin(Constraint):
 
     def potential_sample_conforms(self, sample: dict, block: Block) -> bool:
         levels = sample[self.factor]
-        trial_nos = block.get_trial_numbers(self.index, self.within_block)
+        trial_nos = block.get_trial_numbers(self.factor, self.index, self.within_block)
         if trial_nos:
             for trial_no in trial_nos:
                 if levels[trial_no] != self.level:
@@ -1193,12 +1236,12 @@ class ConstantInWindows(Constraint):
                 f"not multiple of run_len ({self.run_len})."
             )
 
-
         clauses = []
+        sustain_count = block.sustain_count(self.factor)
         for start in range(self.start, T, self.run_len):
             t1 = start + 1  # trials are 1-based internally
             
-            if not self.factor.applies_to_trial(t1):
+            if not self.factor.applies_to_trial((t1-1)//sustain_count + 1):
                 continue
             for lvl in self.factor.levels:
                 sel = block.get_variable(t1, (self.factor, lvl))
@@ -1206,7 +1249,7 @@ class ConstantInWindows(Constraint):
                     block.get_variable(t1 + k, (self.factor, lvl))
                     for k in range(self.run_len)
                     if block.has_factor(self.factor)
-                    and self.factor.applies_to_trial(t1 + k)
+                    and self.factor.applies_to_trial((t1 + k - 1)//sustain_count + 1)
                 ]
                 clauses.append(If(sel, And(need)))
 
