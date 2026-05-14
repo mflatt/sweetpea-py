@@ -5,7 +5,7 @@ a factorial experimental design.
 from abc import abstractmethod
 from functools import reduce
 from itertools import accumulate, combinations, product, repeat, chain
-from typing import List, Union, Tuple, Optional, cast, Any, Dict, Set, Sequence
+from typing import List, Union, Tuple, Optional, cast, Any, Dict, Set, Sequence, Callable, TypeVar
 from math import ceil
 from networkx import has_path
 import copy
@@ -28,6 +28,8 @@ from sweetpea._internal.sample_conversion import convert_sample_from_names_to_ob
 from sweetpea._internal.check_mismatch import combinations_mismatched_weights
 from enum import Enum, auto
 import random
+
+T = TypeVar('T')
 
 class RepeatMode(Enum):
     WEIGHT = "weight"
@@ -125,6 +127,11 @@ class MultiCrossBlockRepeat(Block):
             default=0
         )
 
+        within_block = self.get_geometry(0)
+        for i in range(0, len(self.constraints)):
+            ct = self.constraints[i]
+            ct.init_within_block(within_block)
+
         self.__validate(who)
 
     def __validate(self, who: str):
@@ -196,9 +203,10 @@ class MultiCrossBlockRepeat(Block):
         self._trials_per_sample = max([self.min_trials, self._trials_per_sample_for_crossing()])
         return self._trials_per_sample
 
-    def get_geometry(self) -> BlockGeometry:
-        return BlockGeometry(self.trials_per_sample(),
-                             self.trials_per_sample() - self.preamble_size())
+    def get_geometry(self, sustain_count: int = 1) -> BlockGeometry:
+        return BlockGeometry(self.trials_per_sample() * max(1, sustain_count),
+                             self.preamble_size(self.crossings[0]) * max(1, sustain_count),
+                             {f: max(1, n*sustain_count) for f,n in self.factor_to_sustain_count.items()})
 
     def variables_per_trial(self):
         # Factors with complex windows are excluded because we don't want variables allocated
@@ -334,9 +342,11 @@ class MultiCrossBlockRepeat(Block):
     def preamble_size(self, crossing: Optional[List[Factor]] = None):
         if self.alignment == AlignmentMode.POST_PREAMBLE:
             return max(self._alignment_preamble, max(self.preamble_sizes))
-
         crossing = self.__select_crossing(crossing)
         return self._trials_per_sample_for_one_crossing(crossing) - self.crossing_size(crossing)
+
+    def common_preamble_size(self):
+        return self.preamble_size(self.crossings[0])
 
     def crossing_weight(self, crossing: Optional[List[Factor]] = None):
         """Gets the implicit weight applied to every combination in
@@ -378,7 +388,7 @@ class MultiCrossBlockRepeat(Block):
         for factor in self.design:
             if not isinstance(factor.name, HiddenName):
                 factor_test = True
-                for i in range(len(sample_objects[factor])):
+                for i in range(0, len(sample_objects[factor]), self.sustain_count(factor)):
                     factor_test &= factor.test_trial(i, sample_objects)
                 if not factor_test:
                     res.append(factor.name)
@@ -407,8 +417,9 @@ class MultiCrossBlockRepeat(Block):
         for i, crossing in enumerate(self.crossings):
             bad = 0
             start = self.preamble_sizes[i]
-            c_weight = self.crossing_weight(crossing) * self.crossing_sustain_count(crossing)
+            c_weight = self.crossing_weight(crossing)
             c_crossing_size = self.crossing_sizes[i] * c_weight
+            c_sustain_weight = c_weight * self.crossing_sustain_count(crossing)
             levels_lists = [sample[f.name] for f in crossing]
             # check if length of sample is enough to satisfy the crossings
             for levels in levels_lists:
@@ -420,11 +431,31 @@ class MultiCrossBlockRepeat(Block):
                 if (end > trial_count):
                     end = trial_count
                     or_less = True
-                bad += combinations_mismatched_weights(start, end, c_weight, crossing, sample_objects, or_less)
+                bad += combinations_mismatched_weights(start, end, c_sustain_weight, crossing, sample_objects, or_less)
                 start += c_crossing_size
             if bad > acceptable_error_per_crossing:
                 res.append(str(crossing))
         return res
+
+    def map_block_trial_ranges(self, within_block: Optional[BlockGeometry], proc: Callable[[int, int], T]) -> List[T]:
+        num_trials = self.trials_per_sample()
+        if within_block:
+            if self.alignment == AlignmentMode.POST_PREAMBLE:
+                start = self.preamble_size() - within_block.preamble_size
+            else:
+                start = 0
+            end = within_block.num_trials
+            step = within_block.num_trials - within_block.preamble_size
+        else:
+            start = 0
+            end = num_trials
+            step = num_trials
+        lists = cast(List[T], [])
+        while start < num_trials:
+            lists.append(proc(start, end))
+            start += step
+            end += step
+        return lists
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -530,33 +561,55 @@ class CrossBlock(MultiCrossBlock):
         argcheck(who, crossing, make_islistof(Factor), "list of Factors for crossing")
         # Not sure whether constraints can be used here. To Do.
         argcheck(who, constraints, make_islistof(Constraint), "list of Constraints for constraints")
-        self._create(who, design, [crossing], [1], [1], constraints, require_complete_crossing, RepeatMode.WEIGHT)
-
+        self._create(who, design, [crossing], [1], [1], constraints, require_complete_crossing,
+                     mode=RepeatMode.WEIGHT)
 
 class NestBlock(MultiCrossBlockRepeat):
     def __init__(self,
                  outer_block: MultiCrossBlockRepeat,
                  inner_block: MultiCrossBlockRepeat,
-                 constraints: List[Constraint] = []):
+                 constraints: List[Constraint] = [],
+                 alignment: Optional[Union[str, AlignmentMode]] = None
+                 ):
+        who = "NestBlock"
+        argcheck(who, outer_block, MultiCrossBlockRepeat, "MultiCrossBlock object")
+        argcheck(who, inner_block, MultiCrossBlockRepeat, "MultiCrossBlock object")
+
         for c in outer_block.crossings:
             for f in c:
                 for ic in inner_block.crossings:
                     if f in ic:
                         raise ValueError("Factor cannot be in crossing for both outer and inner blocks.")
-        if outer_block.alignment != inner_block.alignment:
-            raise ValueError("Outer and inner blocks cannot have different alignment.")
+
+        if alignment is None:
+            alignment = outer_block.alignment
+        elif isinstance(alignment, AlignmentMode):
+            pass
+        elif alignment not in self._valid_alignment:
+            raise ValueError(f"Invalid alignment '{alignment}'. Must be AlignmentMode or one of {list(self._valid_alignment.keys())}.")
+        else:
+            alignment = self._valid_alignment[alignment]
+
+        if alignment != inner_block.alignment:
+            if alignment == AlignmentMode.EQUAL_PREAMBLE and len(outer_block.crossings) == 1:
+                alignment = inner_block.alignment
+            elif inner_block.alignment == AlignmentMode.EQUAL_PREAMBLE and len(inner_block.crossings) == 1:
+                pass
+            else:
+                raise ValueError("Outer and inner blocks cannot have different alignment.")
         design = outer_block.design
         for f in inner_block.design:
             if f not in design:
                 design.append(f)
         crossings = outer_block.crossings + inner_block.crossings
-        inner_len = inner_block.crossing_size()
+        inner_len = inner_block.trials_per_sample() - inner_block.common_preamble_size()
         outer_sustain_counts = [inner_len * sc for sc in outer_block.crossing_sustain_counts]
         crossing_sustain_counts = outer_sustain_counts + inner_block.crossing_sustain_counts
-        inner_constraints = [copy.copy(ct) for ct in inner_block.constraints]
-        for ct in inner_constraints:
-            ct.set_within_block(inner_block.get_geometry())
-        all_constraints = outer_block.constraints + inner_constraints + constraints
+        inner_constraints = inner_block.constraints
+        outer_constraints = [copy.copy(ct) for ct in outer_block.constraints]
+        for ct in outer_constraints:
+            ct.sustain_within_block(inner_len)
+        all_constraints = outer_constraints + inner_constraints + constraints
         self._create(
             who="NestBlock",
             design=design,
@@ -566,7 +619,7 @@ class NestBlock(MultiCrossBlockRepeat):
             constraints=all_constraints,
             require_complete_crossing=True,
             mode=RepeatMode.REPEAT,
-            alignment=outer_block.alignment
+            alignment=alignment
         )
  
 class NestedBlock(MultiCrossBlockRepeat):

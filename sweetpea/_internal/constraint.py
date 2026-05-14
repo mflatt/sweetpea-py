@@ -230,10 +230,11 @@ class Sustain(Constraint):
             if sustain_count > 1:
                 levels = sample[f]
                 for i in range(0, len(levels), sustain_count):
-                    level = levels[i]
-                    for j in range(1, sustain_count):
-                        if levels[i+j] != level:
-                            return False
+                    if f.applies_to_trial(i//sustain_count + 1):
+                        level = levels[i]
+                        for j in range(1, sustain_count):
+                            if levels[i+j] != level:
+                                return False
         return True
 
 class Derivation(Constraint):
@@ -384,7 +385,7 @@ class _KInARow(Constraint):
     def __init__(self, k, level):
         self.k = k
         self.level = level
-        self.within_block = cast(Optional[BlockGeometry], False)
+        self.within_block = cast(Optional[BlockGeometry], None)
         self.__validate()
 
     def __validate(self) -> None:
@@ -402,9 +403,12 @@ class _KInARow(Constraint):
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.level.get_factor(), self.level)
 
-    def set_within_block(self, within_block: BlockGeometry) -> None:
-        if self.within_block is False:
+    def init_within_block(self, within_block: BlockGeometry) -> None:
+        if self.within_block is None:
             self.within_block = within_block
+
+    def sustain_within_block(self, within_block: BlockGeometry) -> None:
+        self.within_block = self.within_block.sustain(within_block)
  
     def uses_factor(self, f: Factor) -> bool:
         if isinstance(self.level, Factor):
@@ -888,9 +892,12 @@ class Pin(Constraint):
         self.level = level
         self.within_block = cast(Optional[BlockGeometry], False)
 
-    def set_within_block(self, within_block: BlockGeometry) -> None:
+    def init_within_block(self, within_block: BlockGeometry) -> None:
         if self.within_block is False:
             self.within_block = within_block
+
+    def sustain_within_block(self, within_block: BlockGeometry) -> None:
+        self.within_block = self.within_block.sustain(within_block)
 
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.factor, self.level)
@@ -910,6 +917,7 @@ class Pin(Constraint):
 
     def apply(self, block: Block, backend_request: BackendRequest) -> None:
         trial_nos = block.get_trial_numbers(self.factor, self.index, self.within_block)
+        print(self.within_block, trial_nos)
         if trial_nos:
             for trial_no in trial_nos:
                 var = block.get_variable(trial_no+1, (self.factor, self.level))

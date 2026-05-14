@@ -27,9 +27,17 @@ from sweetpea._internal.argcheck import argcheck, make_islistof
 T = TypeVar('T')
 
 class BlockGeometry():
-    def __init__(self, num_trials: int, crossing_size: int):
+    def __init__(self, num_trials: int, preamble_size: int, factor_to_sustain_count: Dict[Factor, int]):
         self.num_trials = num_trials
-        self.crossing_size = crossing_size
+        self.preamble_size = preamble_size
+        self.factor_to_sustain_count = factor_to_sustain_count
+    def __repr__(self):
+        return f"BlockGeometry({self.num_trials!r}, {self.preamble_size!r}, {self.factor_to_sustain_count!r})"
+
+    def sustain(self, sustain_count: int):
+        return BlockGeometry(self.num_trials * sustain_count,
+                             self.preamble_size * sustain_count,
+                             {f:n*sustain_count for f,n in self.factor_to_sustain_count.items()})
 
 class Block:
     """Abstract class for Blocks. Contains the required data, and defines
@@ -590,22 +598,9 @@ class Block:
                 results[f.name] = vals
         return results
 
+    @abstractmethod    
     def map_block_trial_ranges(self, within_block: Optional[BlockGeometry], proc: Callable[[int, int], T]) -> List[T]:
-        num_trials = self.trials_per_sample()
-        if within_block:
-            start = 0
-            end = within_block.num_trials
-            step = within_block.crossing_size
-        else:
-            start = 0
-            end = num_trials
-            step = num_trials
-        lists = cast(List[T], [])
-        while start < num_trials:
-            lists.append(proc(start, end))
-            start += step
-            end += step
-        return lists
+        pass
 
     def __build_simple_variable_lists(self,
                                       level: Tuple[Factor, Union[SimpleLevel, DerivedLevel]],
@@ -639,7 +634,10 @@ class Block:
             return 1
 
     def get_trial_numbers(self, f: Factor, b_trial_no: int, within_block: Optional[BlockGeometry] = None) -> List[int]:
-        sustain_count = self.sustain_count(f)
+        if within_block is None:
+            sustain_count = self.sustain_count(f)
+        else:
+            sustain_count = within_block.factor_to_sustain_count[f]
         def get_variables(start: int, end: int) -> List[int]:
             nonlocal b_trial_no
             nonlocal sustain_count
