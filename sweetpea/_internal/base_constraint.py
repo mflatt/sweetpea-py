@@ -51,5 +51,5 @@ class Constraint(ABC):
         """
         pass
 
-    def set_within_block(self) -> None:
+    def set_within_block(self, within_block) -> None:
         pass

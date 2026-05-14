@@ -25,7 +25,12 @@ from sweetpea._internal.weight import combination_weight
 from sweetpea._internal.argcheck import argcheck, make_islistof
 
 T = TypeVar('T')
-            
+
+class BlockGeometry():
+    def __init__(self, num_trials: int, crossing_size: int):
+        self.num_trials = num_trials
+        self.crossing_size = crossing_size
+
 class Block:
     """Abstract class for Blocks. Contains the required data, and defines
     abstract methods that other blocks _must_ implement in order to work
@@ -36,6 +41,7 @@ class Block:
                  design: List[Factor],
                  crossings: List[List[Factor]],
                  crossing_sustain_counts: List[int],
+                 crossing_weights: List[int],
                  constraints: List[Constraint],
                  require_complete_crossing,
                  who: str) -> None:
@@ -47,6 +53,7 @@ class Block:
         self.design = list(design).copy()
         self.crossings = list(map(lambda c: list(c).copy(), crossings))
         self.crossing_sustain_counts = list(crossing_sustain_counts).copy()
+        self.crossing_weights = list(crossing_weights).copy()
         self.constraints = list(constraints).copy()
         self.factor_to_sustain_count = {}
         for c, count in zip(crossings, crossing_sustain_counts):
@@ -61,8 +68,6 @@ class Block:
         self.errors = cast(Set[str], set())
         self.act_design = list(filter(lambda f: not self.factor_is_implied(f), self.design))
         self._trials_per_sample = None
-        self.within_block_count = cast(Optional[int], None)
-        self.within_block_preamble = cast(Optional[int], None)
         self._simple_tuples = cast(Optional[List[Tuple[Factor, Union[SimpleLevel, DerivedLevel]]]], None)
         self._variables_per_trial = None
         self.__validate(who)
@@ -276,6 +281,10 @@ class Block:
 
         Analogous to the old ``__fully_cross_size`` function.
         """
+        pass
+
+    @abstractmethod
+    def get_geometry(self) -> BlockGeometry:
         pass
 
     @abstractmethod
@@ -512,7 +521,7 @@ class Block:
 
     def build_variable_lists(self,
                              level_pair: Tuple[Factor, Union[SimpleLevel, DerivedLevel]],
-                             within_block: bool = False) -> List[List[int]]:
+                             within_block: Optional[BlockGeometry] = None) -> List[List[int]]:
         """Given a specific level (factor + level pair), this method will
         return the list of variables that correspond to that level in each
         trial in the encoding.
@@ -581,15 +590,12 @@ class Block:
                 results[f.name] = vals
         return results
 
-    def map_block_trial_ranges(self, within_block: bool, proc: Callable[[int, int], T]) -> List[T]:
+    def map_block_trial_ranges(self, within_block: Optional[BlockGeometry], proc: Callable[[int, int], T]) -> List[T]:
         num_trials = self.trials_per_sample()
         if within_block:
             start = 0
-            if self.within_block_count and (self.within_block_preamble != None):
-                end = self.within_block_count
-                step = self.within_block_count - cast(int, self.within_block_preamble)
-            else:
-                raise RuntimeError("within-block but not in a repeat?!")
+            end = within_block.num_trials
+            step = within_block.crossing_size
         else:
             start = 0
             end = num_trials
@@ -603,7 +609,7 @@ class Block:
 
     def __build_simple_variable_lists(self,
                                       level: Tuple[Factor, Union[SimpleLevel, DerivedLevel]],
-                                      within_block: bool = False) -> List[List[int]]:
+                                      within_block: Optional[BlockGeometry] = None) -> List[List[int]]:
         def get_variables(start: int, end: int) -> List[int]:
             nonlocal level
             design_var_count = self.variables_per_trial()
@@ -616,7 +622,7 @@ class Block:
 
     def __build_complex_variable_lists(self,
                                        level: Tuple[Factor, Union[SimpleLevel, DerivedLevel]],
-                                       within_block: bool = False) -> List[List[int]]:
+                                       within_block: Optional[BlockGeometry] = None) -> List[List[int]]:
         factor = level[0]
         level_count = len(factor.levels)
         start_idx = self.first_variable_for_level(level[0], level[1]) + 1
@@ -632,7 +638,7 @@ class Block:
         else:
             return 1
 
-    def get_trial_numbers(self, f: Factor, b_trial_no: int, within_block: bool = False) -> List[int]:
+    def get_trial_numbers(self, f: Factor, b_trial_no: int, within_block: Optional[BlockGeometry] = None) -> List[int]:
         sustain_count = self.sustain_count(f)
         def get_variables(start: int, end: int) -> List[int]:
             nonlocal b_trial_no

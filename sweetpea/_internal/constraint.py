@@ -10,7 +10,7 @@ import inspect
 
 from sweetpea._internal.base_constraint import Constraint
 from sweetpea._internal.iter import chunk, chunk_list
-from sweetpea._internal.block import Block
+from sweetpea._internal.block import Block, BlockGeometry
 from sweetpea._internal.cross_block import MultiCrossBlockRepeat
 from sweetpea._internal.backend import LowLevelRequest, BackendRequest
 from sweetpea._internal.logic import If, Iff, And, Or, Not
@@ -214,7 +214,7 @@ class Sustain(Constraint):
         for f in block.design:
             sustain_count = block.sustain_count(f)
             for l in f.levels:
-                varss = block.build_variable_lists((f, cast(Union[SimpleLevel, DerivedLevel], l)), False)
+                varss = block.build_variable_lists((f, cast(Union[SimpleLevel, DerivedLevel], l)), None)
                 for vars in list(varss):
                     for i in range(0, len(vars)):
                         same_as_i = (i // sustain_count) * sustain_count
@@ -384,7 +384,7 @@ class _KInARow(Constraint):
     def __init__(self, k, level):
         self.k = k
         self.level = level
-        self.within_block = False
+        self.within_block = cast(Optional[BlockGeometry], False)
         self.__validate()
 
     def __validate(self) -> None:
@@ -402,13 +402,10 @@ class _KInARow(Constraint):
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.level.get_factor(), self.level)
 
-    def set_within_block(self) -> None:
-        self.within_block = True
+    def set_within_block(self, within_block: BlockGeometry) -> None:
+        if self.within_block is False:
+            self.within_block = within_block
  
-    # NEW:
-    def set_within_windows(self, window_len: int):
-        self._within_window_len = int(window_len)   # no within_block change
-
     def uses_factor(self, f: Factor) -> bool:
         if isinstance(self.level, Factor):
             return self.level.uses_factor(f)
@@ -452,9 +449,7 @@ class _KInARow(Constraint):
         # use the original (global or repeat-scoped) behavior.
         window_len = cast(Optional[int], getattr(self, "_within_window_len", None))
 
-        # When window-scoped, we must not trigger the repeat-only path in build_variable_lists
-        base_within_block = self.within_block if window_len is None else False
-        var_lists = block.build_variable_lists(level, base_within_block)
+        var_lists = block.build_variable_lists(level, self.within_block)
 
         sublistss: List[List[List[int]]] = []
         for var_list in var_lists:
@@ -763,7 +758,7 @@ class ExactlyKMultipleInARow(_KInARow):
                 backend_request.cnfs.append(cnf)
 
         # Build lists (not repeat-scoped for window behavior)
-        base_var_lists = block.build_variable_lists(level, within_block=self.within_block if not hasattr(self, "_within_window_len") else False)
+        base_var_lists = block.build_variable_lists(level, within_block=self.within_block if not hasattr(self, "_within_window_len") else None)
 
 
         if hasattr(self, "_within_window_len"):
@@ -891,10 +886,11 @@ class Pin(Constraint):
         self.index = index
         self.factor = level.factor
         self.level = level
-        self.within_block = False
+        self.within_block = cast(Optional[BlockGeometry], False)
 
-    def set_within_block(self) -> None:
-        self.within_block = True
+    def set_within_block(self, within_block: BlockGeometry) -> None:
+        if self.within_block is False:
+            self.within_block = within_block
 
     def validate(self, block: Block) -> None:
         validate_factor_and_level(block, self.factor, self.level)
