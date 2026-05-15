@@ -350,6 +350,17 @@ class MultiCrossBlockRepeat(Block):
     def common_preamble_size(self):
         return self.preamble_size(self.crossings[0])
 
+    def factor_preamble_size(self, f: Factor):
+        size = None
+        for c in self.crossings:
+            if f in c:
+                c_size = self.preamble_size(c)
+                if size is None:
+                    size = c_size
+                else:
+                    raise ValueError("Inconsistent preamble size for factor")
+        return 0 if size is None else size
+
     def crossing_weight(self, crossing: Optional[List[Factor]] = None):
         """Gets the implicit weight applied to every combination in
         the given crossing. This weight becomes greater than 1 when a

@@ -14,11 +14,12 @@ __all__ = [
 
     'Derivation', 'WithinTrial', 'Transition', 'Window', 'ContinuousFactorWindow',
 
-    'Constraint', 'LatinSquare',
+    'Constraint', 
     'Exclude', 'Pin', 'MinimumTrials', 'ExactlyK',
     'AtMostKInARow', 'AtLeastKInARow',
-    'ExactlyKInARow', 'ContinuousConstraint',
-    'ExhaustLevelsInOrder',
+    'ExactlyKInARow',
+    'LatinSquare',
+    'Sequential',
 
     'Gen', 'RandomGen', 'IterateSATGen',
     'CMSGen', 'UniGen', 'IterateILPGen',
@@ -49,9 +50,9 @@ from sweetpea._internal.constraint import (
     Consistency, Constraint, Derivation,
     Exclude, Pin, MinimumTrials,
     ExactlyK, AtMostKInARow, AtLeastKInARow, ExactlyKInARow,
-    ContinuousConstraint, ExhaustLevelsInOrder
+    LatinSquare,
+    Sequential
 )
-from sweetpea._internal.latin_square import LatinSquare
 from sweetpea._internal.sampling_strategy.base import Gen
 from sweetpea._internal.sampling_strategy.uniform import UniformGen
 from sweetpea._internal.sampling_strategy.iterate import IterateGen
