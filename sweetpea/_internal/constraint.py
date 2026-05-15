@@ -1012,6 +1012,8 @@ class MinimumTrials(Constraint):
     def potential_sample_conforms(self, sample: dict, block: Block) -> bool:
         return True
 
+    def sustain_within_block(self, sustain_count: int) -> None:
+        self.trials *= sustain_count
 
 
 class ContinuousConstraint(Constraint):

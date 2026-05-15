@@ -257,4 +257,21 @@ def test_nest_block_exactly_k_inner_block(strategy):
         for i in range(0, len(exp["C"])):
             assert exp["C"][i] == "c1"
 
-# check that MinimumTrials is scaled
+@pytest.mark.parametrize('strategy', [IterateSATGen])
+def test_nest_block_minimum_trials(strategy):
+    A = Factor("A", ["a1", "a2"])
+
+    outer = CrossBlock([A], [A], [MinimumTrials(4)])
+
+    exps = synthesize_trials(outer, 10, sampling_strategy=strategy)
+    print_experiments(outer, exps)
+    assert len(exps) == 4
+    assert len(exps[0]["A"]) == 4
+
+    session = Factor("session", ["s1", "s2"])
+    inner = CrossBlock([session], [session], [])
+
+    nb = NestBlock(outer, inner, [])
+    exps = synthesize_trials(nb, 100, sampling_strategy=strategy)
+    assert len(exps) == 64
+    assert len(exps[0]["A"]) == 8
