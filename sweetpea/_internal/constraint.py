@@ -291,7 +291,7 @@ class Derivation(Constraint):
                  dependent_idxs: List[List[object]],
                  factor: DerivedFactor) -> None:
         self.derived_idx = derived_idx
-        self.dependent_idxs = dependent_idxs
+        self.dependent_idxs = dependent_idxs # sustain count is built into these indices
         self.factor = factor
         # TODO: validation
 
@@ -330,8 +330,8 @@ class Derivation(Constraint):
         f = self.factor
         sustain_count = block.sustain_count(f)
         window = f.levels[0].window
-        t = sustain_count-1
-        delta = window.start_delta
+        t = 0
+        delta = window.start_delta * sustain_count
         for n in range(0, trial_count, sustain_count):
             if not f.applies_to_trial(n//sustain_count + 1):
                 continue
@@ -924,7 +924,6 @@ class Pin(Constraint):
 
     def apply(self, block: Block, backend_request: BackendRequest) -> None:
         trial_nos = block.get_trial_numbers(self.factor, self.index, self.within_block)
-        print(self.within_block, trial_nos)
         if trial_nos:
             for trial_no in trial_nos:
                 var = block.get_variable(trial_no+1, (self.factor, self.level))

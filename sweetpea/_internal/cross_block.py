@@ -128,8 +128,10 @@ class MultiCrossBlockRepeat(Block):
         )
 
         within_block = self.get_geometry(0)
-        for i in range(0, len(self.constraints)):
-            ct = self.constraints[i]
+        for ct in self.constraints:
+            ct.init_within_block(within_block)
+        # in case this block is later combined, also update constraints in `orig_constraints`
+        for ct in self.orig_constraints:
             ct.init_within_block(within_block)
 
         self.__validate(who)
@@ -388,8 +390,9 @@ class MultiCrossBlockRepeat(Block):
         for factor in self.design:
             if not isinstance(factor.name, HiddenName):
                 factor_test = True
-                for i in range(0, len(sample_objects[factor]), self.sustain_count(factor)):
-                    factor_test &= factor.test_trial(i, sample_objects)
+                sustain_count = self.sustain_count(factor)
+                for i in range(0, len(sample_objects[factor]), sustain_count):
+                    factor_test &= factor.test_trial(i, sample_objects, sustain_count)
                 if not factor_test:
                     res.append(factor.name)
         return res
@@ -416,7 +419,10 @@ class MultiCrossBlockRepeat(Block):
 
         for i, crossing in enumerate(self.crossings):
             bad = 0
-            start = self.preamble_sizes[i]
+            if self.alignment is AlignmentMode.POST_PREAMBLE:
+                start = self.preamble_size()
+            else:
+                start = self.preamble_sizes[i]
             c_weight = self.crossing_weight(crossing)
             c_crossing_size = self.crossing_sizes[i] * c_weight
             c_sustain_weight = c_weight * self.crossing_sustain_count(crossing)
@@ -512,7 +518,9 @@ class MultiCrossBlock(MultiCrossBlockRepeat):
         argcheck(who, design, make_islistof(Factor), "list of Factors for design")
         argcheck(who, crossings, make_islistof(make_islistof(Factor)), "list of list of Factors for crossings")
         argcheck(who, constraints, make_islistof(Constraint), "list of Constraints for constraints")
-        self._create(who, design, crossings, [1], [1], constraints, require_complete_crossing, mode, alignment)
+        self._create(who, design,
+                     crossings, [1 for c in crossings], [1 for c in crossings],
+                     constraints, require_complete_crossing, mode, alignment)
 
 class CrossBlock(MultiCrossBlock):
     """A fully crossed :class:`.Block` meant to be used in experiment
@@ -597,7 +605,7 @@ class NestBlock(MultiCrossBlockRepeat):
                 pass
             else:
                 raise ValueError("Outer and inner blocks cannot have different alignment.")
-        design = outer_block.design
+        design = outer_block.design + []
         for f in inner_block.design:
             if f not in design:
                 design.append(f)
@@ -605,8 +613,8 @@ class NestBlock(MultiCrossBlockRepeat):
         inner_len = inner_block.trials_per_sample() - inner_block.common_preamble_size()
         outer_sustain_counts = [inner_len * sc for sc in outer_block.crossing_sustain_counts]
         crossing_sustain_counts = outer_sustain_counts + inner_block.crossing_sustain_counts
-        inner_constraints = inner_block.constraints
-        outer_constraints = [copy.copy(ct) for ct in outer_block.constraints]
+        inner_constraints = inner_block.orig_constraints
+        outer_constraints = [copy.copy(ct) for ct in outer_block.orig_constraints]
         for ct in outer_constraints:
             ct.sustain_within_block(inner_len)
         all_constraints = outer_constraints + inner_constraints + constraints
@@ -717,7 +725,7 @@ class NestedBlock(MultiCrossBlockRepeat):
             # inherit inner constraints, scoped to each inner window
             for c in inner_block.orig_constraints:
                 cc = copy.copy(c)
-                cc.set_within_block(inner_block.get_geometry())
+                cc.init_within_block(inner_block.get_geometry())
                 cs.append(cc)
 
             # compute number of windows based on external factor size
@@ -797,7 +805,7 @@ class NestedBlock(MultiCrossBlockRepeat):
 
             for c in inner_block.orig_constraints:
                 cc = copy.copy(c)
-                cc.set_within_block(inner_block.get_geometry())
+                cc.init_within_block(inner_block.get_geometry())
                 cs.append(cc)
                 
 
@@ -910,7 +918,7 @@ class Repeat(MultiCrossBlockRepeat):
 
         block_constraints = [copy.copy(c) for c in block.orig_constraints]
         for c in block_constraints:
-            c.set_within_block(block.get_geometry())
+            c.init_within_block(block.get_geometry())
 
         self._create(who,
                      block.orig_design, block.orig_crossings, block.crossing_sustain_counts, block.crossing_weights,

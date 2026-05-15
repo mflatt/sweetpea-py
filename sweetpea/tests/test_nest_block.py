@@ -46,7 +46,8 @@ def test_nest_block_correct_solution2_count():
     exps = synthesize_trials(nb, 2000, sampling_strategy=IterateSATGen)
     assert len(exps) == 24 * 16
 
-def test_nest_block_pinned_local_block():
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen, CMSGen])
+def test_nest_block_pinned_local_block(strategy):
     A = Factor("A", ["a1", "a2"])
     B = Factor("B", ["b1", "b2"])
 
@@ -56,17 +57,18 @@ def test_nest_block_pinned_local_block():
     inner = CrossBlock([session], [session], [])
 
     nb1 = NestBlock(outer, inner, [])
-    exps = synthesize_trials(nb1, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb1, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][2] == "a1"
         assert exp["A"][3] == "a1"
 
     nb2 = NestBlock(inner, outer, [])
-    exps = synthesize_trials(nb2, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb2, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][1] == "a1"
         
-def test_nest_block_pinned_spanning_block():
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen, CMSGen])
+def test_nest_block_pinned_spanning_block(strategy):
     A = Factor("A", ["a1", "a2"])
     B = Factor("B", ["b1", "b2"])
 
@@ -76,16 +78,17 @@ def test_nest_block_pinned_spanning_block():
     inner = CrossBlock([session], [session], [])
 
     nb1 = NestBlock(outer, inner, [Pin(1, (A, "a1"))])
-    exps = synthesize_trials(nb1, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb1, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][1] == "a1"
 
     nb2 = NestBlock(inner, outer, [Pin(1, (A, "a1"))])
-    exps = synthesize_trials(nb2, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb2, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][1] == "a1"
 
-def test_double_nest_block_pinned_middle_block():
+@pytest.mark.parametrize('strategy', [IterateSATGen, CMSGen])
+def test_double_nest_block_pinned_middle_block(strategy):
     A = Factor("A", ["a1", "a2"])
     B = Factor("B", ["b1", "b2"])
 
@@ -101,18 +104,19 @@ def test_double_nest_block_pinned_middle_block():
     outer_outer = CrossBlock([epoch], [epoch], [])
 
     dnb1 = NestBlock(outer_outer, nb1, [])
-    exps = synthesize_trials(dnb1, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(dnb1, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][1] == "a1"
         assert exp["A"][9] == "a1"
 
     dnb2 = NestBlock(outer_outer, nb2, [])
-    exps2 = synthesize_trials(dnb2, 4, sampling_strategy=IterateSATGen)
+    exps2 = synthesize_trials(dnb2, 4, sampling_strategy=strategy)
     for exp in exps2:
         assert exp["A"][1] == "a1"
         assert exp["A"][9] == "a1"
 
-def test_double_nest_block_pinned_inner_block():
+@pytest.mark.parametrize('strategy', [IterateSATGen, CMSGen])
+def test_double_nest_block_pinned_inner_block(strategy):
     A = Factor("A", ["a1", "a2"])
     B = Factor("B", ["b1", "b2"])
 
@@ -128,13 +132,13 @@ def test_double_nest_block_pinned_inner_block():
     outer_outer = CrossBlock([epoch], [epoch], [])
 
     dnb1 = NestBlock(outer_outer, nb1, [])
-    exps = synthesize_trials(dnb1, 4, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(dnb1, 4, sampling_strategy=strategy)
     for exp in exps:
         assert exp["A"][2] == "a1"
         assert exp["A"][10] == "a1"
 
     dnb2 = NestBlock(outer_outer, nb2, [])
-    exps2 = synthesize_trials(dnb2, 4, sampling_strategy=IterateSATGen)
+    exps2 = synthesize_trials(dnb2, 4, sampling_strategy=strategy)
     for exp in exps2:
         assert exp["A"][1] == "a1"
         assert exp["A"][9] == "a1"
@@ -186,9 +190,10 @@ def test_nest_block_dependent_factor():
     nb = NestBlock(outer, inner, [], alignment=AlignmentMode.POST_PREAMBLE)
 
     exps = synthesize_trials(nb, 1000, sampling_strategy=IterateSATGen)
-    assert len(exps) == 4
+    assert len(exps) == 256
 
-def test_nest_block_dependent_factor2():
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen, CMSGen])
+def test_nest_block_dependent_factor2(strategy):
     A = Factor("A", ["a1", "a2"])
     B = Factor("B", ["b1", "b2"])
 
@@ -205,16 +210,38 @@ def test_nest_block_dependent_factor2():
     
     nb = NestBlock(outer, inner, [], alignment=AlignmentMode.POST_PREAMBLE)
 
-    exps = synthesize_trials(nb, 10, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb, 10, sampling_strategy=strategy)
     assert len(exps) == 10
 
-def test_nest_block_exactly_k_inner_block():
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen, CMSGen])
+def test_nest_block_dependent_factor_larger_window(strategy):
+    A = Factor("A", ["a1", "a2"])
+    B = Factor("B", ["b1", "b2"])
+
+    def was_same(a):
+        return a[-2] == a[0]
+
+    F = Factor("F", [DerivedLevel("consi", Window(was_same, [A], 3)),
+                     ElseLevel("incons")])
+
+    outer = CrossBlock([A, B, F], [A, F], [])
+
+    session = Factor("session", ["s1", "s2"])
+    inner = CrossBlock([session], [session], [])
+
+    nb = NestBlock(outer, inner, [], alignment=AlignmentMode.POST_PREAMBLE)
+
+    exps = synthesize_trials(nb, 10, sampling_strategy=strategy)
+    assert len(exps) == 10
+
+@pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
+def test_nest_block_exactly_k_inner_block(strategy):
     A = Factor("A", ["a1", "a2"])
     C = Factor("C", ["c1", "c2"])
 
     outer = CrossBlock([A, C], [A], [ExactlyK(2, (C, "c1"))])
 
-    exps = synthesize_trials(outer, 10, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(outer, 10, sampling_strategy=strategy)
     assert len(exps) == 2
     for exp in exps:
         for i in range(0, len(exp["C"])):
@@ -224,7 +251,7 @@ def test_nest_block_exactly_k_inner_block():
     inner = CrossBlock([session], [session], [])
 
     nb = NestBlock(outer, inner, [])
-    exps = synthesize_trials(nb, 10, sampling_strategy=IterateSATGen)
+    exps = synthesize_trials(nb, 10, sampling_strategy=strategy)
     assert len(exps) == 8    
     for exp in exps:
         for i in range(0, len(exp["C"])):

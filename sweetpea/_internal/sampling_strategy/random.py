@@ -492,9 +492,10 @@ class UCSolutionEnumerator():
                 trials = run[df][:start]
             else:
                 trials = []
+            sustain_count = self._block.sustain_count(df)
             for i in range(start, end):
                 if df.applies_to_trial(i + 1):
-                    trials.append(df.select_level_for_sample(i, run))
+                    trials.append(df.select_level_for_sample(i, run, sustain_count))
                 else:
                     trials.append(None)
             run[df] = trials
