@@ -178,21 +178,6 @@ def print_experiments(block, experiments):
             ls_name = ct.name
             ls_dlen = ct.diagonal_length()
 
-    if isinstance(experiments[0], List) and ls_name:
-        experiments = _group_for_latin_square(block, experiments)
-
-    # Handle Dict[int, List[dict]] from Latin Square synthesize_trials
-    if isinstance(experiments, dict):
-        for pid in sorted(experiments.keys()):
-            print('\nParticipant {}:'.format(pid))
-            exps = experiments[pid]
-            print('{} trial sequences found.\n'.format(len(exps)))
-            for idx, e in enumerate(exps):
-                print('Experiment {}:'.format(idx))
-                _print_experiment_default(e)
-        return
-
-    # Standard List[dict] path
     print('\n{} trial sequences found.\n'.format(len(experiments)))
     for idx, e in enumerate(experiments):
         print('Experiment {}:'.format(idx))
@@ -497,7 +482,6 @@ def _group_for_latin_square(block, experiments):
                     if not j in new_exps:
                         new_exps[j] = []
                     new_exps[j].append({k: v[i:min(len(v),i+dlen)] for k,v in exp.items() })
-            print(new_exps)
             return new_exps
     return experiments
 

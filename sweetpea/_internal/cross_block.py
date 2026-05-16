@@ -89,6 +89,8 @@ class MultiCrossBlockRepeat(Block):
         mode = normalize_mode(who, mode)
         self.alignment = normalize_alignment(who, alignment)
 
+        crossings = [c for c in crossings if len(c) > 0]
+
         from sweetpea._internal.constraint import Cross, Consistency, Sustain
         from sweetpea._internal.derivation_processor import DerivationProcessor
         self.orig_design = design
@@ -120,7 +122,6 @@ class MultiCrossBlockRepeat(Block):
                 if w != crossing_weights[i]:
                     if mode == RepeatMode.EQUAL:
                         raise RuntimeError("RepeatMode.EQUAL not allowed with different crossing+preamble sizes")
-                    print("SET WEIGHT", w)
                     crossing_weights[i] = w;
 
         self._alignment_preamble = max(
@@ -372,6 +373,8 @@ class MultiCrossBlockRepeat(Block):
         return self._trials_per_sample_for_one_crossing(crossing) - self.crossing_size(crossing)
 
     def common_preamble_size(self):
+        if len(self.crossings) == 0:
+            return 0
         return self.preamble_size(self.crossings[0])
 
     def factor_preamble_size(self, f: Factor):

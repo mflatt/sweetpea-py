@@ -97,22 +97,24 @@ using :func:`.synthesize_trials`. Print generated trials using
    :return: a block description
    :rtype: Block
 
-.. class:: sweetpea.MultiCrossBlock(design, crossings, constraints, require_complete_crossing=True, mode=RepeatMode.EQUAL, alignment=AlignmentMode.EQUAL_PREAMBLE)
+.. class:: sweetpea.Merge(blocks, constraints=[], mode=RepeatMode.REPEAT, alignment=none)
 
-   Creates an experiment description as a block of trials based on
-   multiple crossings.
+   Creates an experiment description by combining two existing
+   descriptions, optionally adding additional constraints.
 
-   The :class:`.MultiCrossBlock` class generalizes
-   :class:`.CrossBlock`, but it accepts multiple crossings in
-   `crossings`, instead of a single crossing. Since
-   :class:`.MultiCrossBlock` is more general, a :class:`.CrossBlock`
-   instance is also a :class:`.MultiCrossBlock` instance.
+   The given `blocks` are merged to happen concurrently, as opposed to
+   one after the other. The `blocks` can have overlapping factors in
+   their designs, but they must have distinct sets of factors in their
+   crossings. The crossings of every `block` are satisfied at the same
+   time in the resulting experiments, essentially in parallel, but
+   added constraints or constaints on shared factors can cause
+   crossings to constrain each other.
 
    The number of trials in each generated sequence for the experiment
    is determined by the *maximum* of number that would be determined
-   by an individual crossing in `crossings`, and every combination 
-   of levels in each individual crossing in `crossings` appears at 
-   least once within that crossing's size.
+   by an individual crossing in `blocks`, and every combination of
+   levels in each individual crossing appears at least once within
+   that crossing's size.
 
    When a crossing's size S is smaller than the number of trials T to
    be generated (as determined by another crossing whose size is
@@ -124,42 +126,39 @@ using :func:`.synthesize_trials`. Print generated trials using
    combinations, so that up to N instances of a combination can
    appear anywhere in the T trials. :attr:`.RepeatMode.REPEAT` ensures that
    each of the S combinations appears once in the first S trials,
-   then once again in the next S trials, and so on, up to N times. 
+   then once again in the next S trials, and so on, up to N times.
+   In other words, :attr:`.RepeatMode.REPEAT` is like using
+   :class:`.Repeat` to increase the number of trials in a crossing.
    An example illustrating the difference of these two strategies is shown in  
    :ref:`Crossing Sizes in MultiCrossBlock <working-with-multiple-crossings-example>` section.
-    
-   At the same time, different crossings in `crossings` can refer to the same
-   factors, which creates constraints on how factor levels are chosen
-   across crossings in a given trial.
 
-   In addition, each crossing in `crossings` could require different number of preamble trials
-   because of derived factors with varying window sizes in the crossing, 
-   the `alignment` parameter controls how crossings are aligned. 
+   In addition, each crossing could require different number of preamble trials
+   due to derived factors with varying window sizes in the crossing.
+   The `alignment` parameter controls how crossings are aligned. 
    Use :attr:`.AlignmentMode.POST_PREAMBLE` to start all crossings after the unified preamble
    trials, or :attr:`.AlignmentMode.PARALLEL_START` to start individual crossing from 
    its own required preamble trials.    
    An example illustrating the difference of these two strategies is shown in  
    :ref:`Preamble Trials in MultiCrossBlock <preamble-trials-multiple-crossings-example>` section.
     
+   Constraints associated with a `block` in `blocks` apply to individual
+   repetitons of the block within the larger experiment description.
+   Additional `constraints` supplied to :class:`.Merge` apply to the
+   entire sequence of trials in the larger experiment. For example, a
+   :class:`AtMostKInARow` constraint on an individual block does not
+   apply across the boundary of a block repetition, but a :class:`AtMostKInARow`
+   constraint in the additional `constraints` would apply at all points,
+   including across repetition boundaries.
 
-
-   :param design: the factors that make up the design
-   :type design: List[Factor]
-   :param crossings: a list of crossings, where each crossing is a
-                     list of discrete factors that are fully crossed in the
-                     block's trials; the factors in each crossing must
-                     be a subset of the `design` list
-   :type crossings: List[List[DiscreteFactor]] 
-   :param constraints: constraints that every sequence of trials must
+   :param blocks: the blocks to be combined into a larger description
+   :type design: List[Block]
+   :param constraints: additional constraints that every sequence of trials must
                        satify; see :ref:`constraints`
    :type constraints: List[Constraint]
-   :param require_complete_crossing: same as for :class:`.CrossBlock`
    :param mode: determines the strategy for :class:`.RepeatMode`, 
                 whether to use :attr:`.RepeatMode.WEIGHT` OR :attr:`.RepeatMode.REPEAT`
                 to generate additional trials for smaller crossings.
-                Mode must be specified when crossing sizes are different.
-                The default value is :attr:`RepeatMode.EQUAL`, which suggests
-                all crossings have equal crossing sizes. If `str` is provided instead of 
+                If `str` is provided instead of 
                 a :class:`.RepeatMode`, it will behave identically by mapping the string to 
                 the corresponding enum: 'weight' maps to :attr:`.RepeatMode.WEIGHT`, 
                 'repeat' maps to :attr:`.RepeatMode.REPEAT` and 'equal' maps to :attr:`.RepeatMode.EQUAL`
@@ -167,19 +166,34 @@ using :func:`.synthesize_trials`. Print generated trials using
    :param alignment: determines the strategy for :class:`.AlignmentMode`, 
                      whether to use :attr:`.AlignmentMode.PARALLEL_START` OR :attr:`.AlignmentMode.POST_PREAMBLE`
                      to align crossings with different preamble trials.
-                     Alignment must be specified when the number preamble trials is different
-                     for crossings because of window sizes of derived factors.
-                     The default value is :attr:`AlignmentMode.EQUAL_PREAMBLE`, which suggests
-                     the preamble trials are equal for all crossings. If `str` is provided instead of 
+                     If `alignment` is not specified, it defaults to the alignment of the
+                     first block in `blocks`. If `str` is provided instead of 
                      a :class:`.AlignmentMode`, it will behave identically by mapping the string to 
                      the corresponding enum: 'post preamble' maps to :attr:`.AlignmentMode.POST_PREAMBLE`, 
                      'parallel start' maps to :attr:`.AlignmentMode.PARALLEL_START`, and
                      'equal preamble' maps to :attr:`.AlignmentMode.EQUAL_PREAMBLE`. 
-   :type alignment: Union[str, AlignmentMode]
+   :type alignment: Optional[Union[str, AlignmentMode]]
 
 
    :return: a block description
    :rtype: Block
+
+.. class:: sweetpea.MultiCrossBlock(design, crossings, constraints, require_complete_crossing=True, mode=RepeatMode.EQUAL, alignment=AlignmentMode.EQUAL_PREAMBLE)
+
+   A shorthand for :class:`.Merge` of a sequence of :class:`.CrossBlocks`.
+   A call
+
+   .. code-block:: python
+
+     MultiCrossBlock(design, [crossing, ...], constraints,
+                     require_complete_crossing, mode, alignment)
+
+   is equivalent to                     
+
+   .. code-block:: python
+
+     Merge([CrossBlock(design, crossing, [], require_complete_crossing), ...]
+           constraints, mode, alignment)
 
 .. class:: sweetpea.Repeat(block, constraints)
 
@@ -221,85 +235,41 @@ using :func:`.synthesize_trials`. Print generated trials using
    :rtype: Block
 
 
-.. class:: sweetpea.NestedBlock(design, crossing, constraints=None, num_permutations=None)
+.. class:: sweetpea.Nest(outer_block, inner_block, constraints=[])
 
-   Creates an experiment description that repeats an `inner block` 
-   as consecutive windows while holding selected `external factors` 
-   constant within each window.
+   Creates an experiment description that repeats `inner_block`
+   once for each combination described by `outer_block`, holding
+   each combination of `outer_block` constant across combinations
+   of `inner_block`.
 
-   The :class:`.NestedBlock` class combines exactly one `inner block` (a
-   :class:`.CrossBlock`) with one or more external factors. 
-   When a sequence of trials is generated, each window consists of a
-   complete run of the `inner block`; 
-   `external factors` in the design remain constant
-   throughout that window and may change only between windows.
+   The effect is the same as increasing the number of trials in
+   `outer_block` a factor corresponding to the number of trials in
+   `inner_block`, using :attr:`.RepeatMode.WEIGHT` mode for that
+   scaling, adding a constraint that consecutive trials have the same
+   level, and then using :class:`.Merge` to combine the scaled
+   `outer_block` with `inner_block` in :attr:`.RepeatMode.RePEAT` mode
+   (so that `inner_block` is repeated, since the scaled `outer_block`
+   has a number of trials that is a multiple of `inner_block` trials).
 
-   The `design` argument lists the `inner block` used to form windows 
-   and the `external factors`. The `crossing` argument could list any
-   `external factors` from design, including the `inner block`:
-
-   If `crossing` only contains the `external factors`, each window reuses 
-   the `inner block` exactly as defined, and windows are balanced 
-   across the `external factor` combinations.
-
-   If `crossing` also lists the `inner block`, the order of the `inner block`’s
-   trial combinations is allowed to vary between windows. In that case,
-   `num_permutations` can be used to limit how many distinct permutations
-   appear.
-
-   When in this permuted mode, the actual set of chosen permutations is
-   refreshed for each synthesized experiment. That means each call to
-   :func:`.synthesize_trials` will  use different permutations, 
-   rather than reusing the same ones across experiments.
-
-   Constraints and derivations defined on the `inner block` are reused 
-   inside every window. Constraints supplied in constraints apply at 
-   the outer level (across windows). 
-   The number of trials in each generated sequence is determined by 
-   the size of one `inner block` run (including any preamble implied 
-   by the derived factors) multiplied by the number of windows, 
-   which is the product of the counterbalancing `external factors`. 
-
-   If the `inner block` is included in crossing, the number of trials is 
-   multiplied by `num_permutations` or the full number of distinct 
-   permutations when `num_permutations` is not specified.
-
-   `Design` must contain exactly one inner block and at least one `external factor`.
-
-   Every `external factor` listed in `design` must also be listed in 
-   the `crossing`. The `inner block` itself does not have to be included 
-   in `crossing`, unless you want different permutations between windows.
-   An example illustrating the the usage of :class:`.NestedBlock` is shown in  
-   :ref:`Using NestedBlockk <nestedblock-example>` section.
-
-   :param design: one `inner block` plus the `external factors` 
-   :type design: List[Union[Factor, MultiCrossBlock]]
-   :param crossing: all `external factors` from `design`; 
-                    optionally include the `inner block` 
-                    to allow different `inner block` orders per window
-   :type crossing: List[Union[Factor, MultiCrossBlock]]
-   :param constraints: outer-level constraints; 
-                       `inner block` constraints are inherited automatically
+   :param outer_block: a block whose trials should be individually repeated
+   :type outer_block: Block
+   :param inner_block: a block whose trial sequence should be repeated once
+                       for each trial of `outer_block`
+   :type inner_block: Block
+   :param constraints: additional constraints to add to the merged
+                       experiment description
    :type constraints: List[Constraint]
-   :param num_permutations: when the inner block is included in crossing, 
-                            `num_permutations` decides the number of distinct 
-                            `inner block` orders across windows. When it is not 
-                            specified, the full permutation will be used.
-                            The chosen set of permutations is refreshed on every 
-                            synthesized experiment, so repeated calls can yield 
-                            different orderings.
-   :type num_permutations: Optional[int]
    :return: a block description
    :rtype: Block
 
-.. function:: sweetpea.synthesize_trials(block, samples=10, sampling_strategy=IterateGen, participants=None)
+.. function:: sweetpea.synthesize_trials(block, samples=10, sampling_strategy=IterateGen)
 
    Given an experiment description, generates multiple blocks of trials.
 
    Each block has a number of trials that is determined by the
-   experiment's crossing, and each trial is a combination of levels
-   subject to implicit and explicit constraints in the experiment
-   description.
+   experiment's crossing and other constranints, where each trial is a
+   combination of levels subject to implicit and explicit constraints
+   in the experiment description.
 
    The `sampling_strategy` argument determines properties of the
    resulting samples, such as whether each sequence reflects a
@@ -311,14 +281,6 @@ using :func:`.synthesize_trials`. Print generated trials using
    a result as quickly as possible for the broadest range of
    designs.
 
-   When the block contains a :class:`.LatinSquare` constraint, a reduced
-   :class:`.NestedBlock` is built for each participant containing only
-   that participant's diagonal combinations. By default, all participants
-   are generated. When ``participants`` is explicitly provided, only those
-   participants are solved, saving computation. Participant IDs wrap
-   cyclically, so participant 5 on a 2-diagonal grid maps to the same
-   diagonal as participant 1.
-
    :param block: the experiment description
    :type block: Block
    :param samples: the number of sequences of trials to generate; for
@@ -329,18 +291,10 @@ using :func:`.synthesize_trials`. Print generated trials using
    :param sampling_strategy: how a random set of trials is generated; the default is currently
                              :class:`.IterateGen`, but this is subject to change
    :type sampling_strategy: Gen
-   :param participants: list of participant IDs for Latin Square
-                        counterbalancing; defaults to all participants when a
-                        :class:`.LatinSquare` constraint is present; when
-                        explicitly provided, only those participants are solved
-   :type participants: Optional[List[int]]
-   :return: when no :class:`.LatinSquare` constraint is present and
-            ``participants`` is ``None``, a list of trial-sequence
-            dictionaries; when Latin Square counterbalancing is active,
-            a dictionary mapping each participant ID to its list of
-            trial-sequence dictionaries
-   :rtype: Union[List[Dict[str, list]], Dict[int, List[Dict[str, list]]]]
-           
+   :return: a list of trial-sequence dictionaries, one dictionary each
+            sample
+   :rtype: List[Dict[str, list]]
+
 .. function:: sweetpea.print_experiments(block, experiments)
 
    Prints the trials generated by :func:`.synthesize_trials` in a

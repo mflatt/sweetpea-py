@@ -889,27 +889,24 @@ original `inner block`.
 Latin Square Counterbalancing
 -----------------------------
 
-A *Latin Square* is pattern for ordering a crossing so that successive
+A *Latin Square* is pattern that orders a crossing so that successive
 diagonals are first explored, which provides a more varierty for
 combinations within a trial subsequence than could be expected
 otherwise. A Latin Square can be particularly useful in an experiment
 with multiple participants, where each participant sees only a subset
 of the possible combinations, but still sees each level that could
-contribute to a combination, and all conbinations are generated across
-multiple participants.
-
-SweetPea supports Latin Square counterbalancing through the
-:class:`.LatinSquare` constraint, where the constraint names factors
-that are crossed.
+contribute to a combination---and all conbinations are generated
+across multiple participants. SweetPea supports Latin Square
+counterbalancing through the :class:`.LatinSquare` constraint, which
+expects a list of factors that are crossed.
 
 A 2x2 Example
 ^^^^^^^^^^^^^
 
 Suppose we have `Font` (`small` or `big`) and `Color` (`red` or
 `green`) to cross, and we don't need every participant to see every
-combination, as long as they see every possible font and color at some
-point. Since the largest (in fact, both) of those factors has 2
-levels, there are 2 diagonals in a Litin Square for the factors.
+combination. Since these factor each have 2 levels, there are 2
+diagonals in a Latin Square for the factors.
 
 .. list-table:: 2x2 Latin Square Diagonals
    :widths: auto
@@ -931,7 +928,8 @@ levels, there are 2 diagonals in a Litin Square for the factors.
 - **Diagonal 1**: (small, green) and (big, red)
 
 If we simply cross the factors, there's no guarantee that both colors
-will show up in the first two trails.
+will show up in the first two trails, only that all `Font`-`Color` word
+combinations will show up over four trials.
   
   .. doctest::
 
@@ -952,9 +950,9 @@ will show up in the first two trails.
     Font big   | Color red  
     Font small | Color red 
 
-We can force both fonts and colors to show up in the first two
-trials---without picking a specific color or font---by adding a
-:class:`.LatinSquare` constraint.
+We can force both `Font` levels and both `Color` levels to show up in
+the first two trials---without picking a specific color or font---by
+adding a :class:`.LatinSquare` constraint.
 
   .. doctest::
 
@@ -983,8 +981,8 @@ Synthesizing Experiments for Participants
 Using just the output of ``print_experiments(lsb, exps)``, we have to
 figure out for ourselves where to draw the boundary between
 participants. If the block for an experiment has a :class:`.LatinSquare`
-constraint with a name for the diagonal, then printing 
-
+constraint with a name for the diagonal, then printing breaks up
+each generated experiment into sections labelled by participant name.
 
   .. doctest::
 
@@ -1018,118 +1016,56 @@ constraint with a name for the diagonal, then printing
     Font big   | Color red  
 
     
-Building the Experiment
-^^^^^^^^^^^^^^^^^^^^^^^
+Latin Squares as Crossing
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
+In the example with `Font` and `Color`, we crossed the factors to take
+sure that each generated experiment covers all combinations. The
+:class:`LatinSquare` constraint does not require the factors that is
+is given to be crossed already. The constraint that it imposes is
+stronger than crossing in terms of trial sequences, but weaker than
+crossing because :class:`LatinSquare` does not imply a number of
+trials. It can be imposed after the fact to a design that supplies
+enough trials.
 
-    # Create the LatinSquare constraint on the outer factors
-    ls = LatinSquare(outer_factors=[font, color])
+  .. doctest::
 
-    # Define the inner block (fully crossed Task x Speed)
-    inner = CrossBlock([task, speed], [task, speed], [])
-
-    # Build the NestedBlock with the LatinSquare constraint
-    nb = NestedBlock(
-        design=[font, color, inner],
-        crossing=[font, color],
-        constraints=[ls]
-    )
-
-    # Inspect the diagonals
-    print(ls.diagonals)
-    # {0: [('S', 'R'), ('B', 'G')], 1: [('S', 'G'), ('B', 'R')]}
-    print(ls.num_participants)
-    # 2
-
-
-Generating Trials
-^^^^^^^^^^^^^^^^^
-
-When a :class:`.LatinSquare` constraint is present, :func:`.synthesize_trials`
-automatically generates trials for all participants and returns a
-``Dict[int, List[dict]]`` grouped by participant ID:
-
-.. code-block:: python
-
-    # Generate trials for all participants (default)
-    results = synthesize_trials(nb, 1)
-
-    # results is a Dict[int, List[dict]]
-    # Each participant gets 2 blocks x 4 inner trials = 8 trials
-    for pid in sorted(results.keys()):
-        exp = results[pid][0]
-        print(f"Participant {pid}: {len(exp['Font'])} trials")
-    # Participant 0: 8 trials
-    # Participant 1: 8 trials
-
-    # Print with participant labels
-    print_experiments(nb, results)
-
-
-Generating a Subset of Participants
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can request specific participants to save computation. Only those
-participants' blocks are solved:
-
-.. code-block:: python
-
-    # Only solve for participant 0 -- participant 1 is never computed
-    results = synthesize_trials(nb, 1, participants=[0])
-
-    # Skip participants 0-49, only solve for 50-55
-    results = synthesize_trials(nb, 1, participants=[50, 51, 52, 53, 54, 55])
-
-Participant IDs wrap cyclically. On a 2-diagonal grid, participant 2 and 4 gets the
-same diagonal as participant 0 (since 2 % 2 = 4 % 2 = 0).
-
-
-Without LatinSquare
-^^^^^^^^^^^^^^^^^^^
-
-When no :class:`.LatinSquare` constraint is present, :func:`.synthesize_trials`
-behaves returns a ``List[dict]`` with all outer combinations and 
-no participant grouping:
-
-.. code-block:: python
-
-    # NestedBlock without LatinSquare — standard behavior
-    nb_plain = NestedBlock(
-        design=[font, color, inner],
-        crossing=[font, color],
-        constraints=[]
-    )
-    experiments = synthesize_trials(nb_plain, 1)
-    # Returns List[dict] with 4 blocks x 4 inner trials = 16 trials
-
-
-Larger Grids
-^^^^^^^^^^^^
-
-Latin Square works with any number of factors and levels:
-
-.. code-block:: python
-
-    # 3x3 grid: 3 diagonals, 3 participants
-    font  = Factor("Font",  ["S", "M", "B"])
-    color = Factor("Color", ["R", "G", "Bu"])
-    ls = LatinSquare(outer_factors=[font, color])
-    # ls.num_participants == 3
-    # Each participant gets 3 outer combos x 4 inner trials = 12 trials
-
-
-Rectangular Grids
-^^^^^^^^^^^^^^^^^
-
-When factors have different numbers of levels, the number of diagonals is
-``max`` of the level counts. Balance warnings are printed if some diagonals
-are missing levels of a factor:
-
-.. code-block:: python
-
-    # 2x3 grid: D = max(2, 3) = 3 diagonals
-    font  = Factor("Font",  ["S", "B"])
-    color = Factor("Color", ["R", "G", "Bu"])
-    ls = LatinSquare(outer_factors=[font, color])
-    # WARNING: Diagonal 2: factor 'Font' is missing levels ...
+    >>> from sweetpea import (Factor, CrossBlock, MinimumTrials,
+                              Nest, LatinSquare,
+                              synthesize_trials, print_experiments)
+    >>> font  = Factor("Font",  ["small", "big"])
+    >>> color = Factor("Color", ["red", "green"])
+    >>> task  = Factor("Task",  ["read", "paint"])
+    >>> b = CrossBlock(design=[font, color],
+                       crossing=[],
+                       constraints=[MinimumTrials(2)])
+    >>> nb = Nest(outer_block=CrossBlock([task], [task], []),
+                  inner_block=b,
+                  constraints=[LatinSquare([font, color],
+                                           name="Participant")])
+    >>> exps = synthesize_trials(nb, 2)
+    Sampling 1 trial sequences using NonUniformGen.
+    Encoding experiment constraints...
+    Running CryptoMiniSat...
+    >>> print_experiments(nb, exps)
+    2 trial sequences found.
+    <BLANKLINE>
+    Experiment 0:
+    <BLANKLINE>
+    Participant 0:
+    Task paint | Font big   | Color green
+    Task paint | Font small | Color red  
+    <BLANKLINE>
+    Participant 1:
+    Task read | Font small | Color green
+    Task read | Font big   | Color red  
+    <BLANKLINE>
+    Experiment 1:
+    <BLANKLINE>
+    Participant 0:
+    Task paint | Font small | Color red  
+    Task paint | Font big   | Color green
+    <BLANKLINE>
+    Participant 1:
+    Task read | Font small | Color green
+    Task read | Font big   | Color red  
