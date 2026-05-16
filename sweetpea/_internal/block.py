@@ -496,6 +496,8 @@ class Block:
         """
         if self.is_excluded_combination(di):
             return True
+        if self.crossings == []:
+            return False
         for f in self.crossings[0]:
             if isinstance(f, DerivedFactor) and not f.has_complex_window and f in di:
                 l = cast(DerivedLevel, di[f])

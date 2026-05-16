@@ -35,6 +35,8 @@ class DesignPartitions():
         """
         if self._crossed:
             return self._crossed
+        if self._block.crossings == []:
+            return []        
         result = self._block.crossings[self.main_crossing]
         result = list(filter(lambda f: not f.has_complex_window, result))
         self._crossed = result
@@ -51,6 +53,8 @@ class DesignPartitions():
 
         """
         result = []
+        if self._block.crossings == []:
+            return []        
         for f in self._block.crossings[self.main_crossing]:
             if f.has_complex_window:
                 if f not in result:

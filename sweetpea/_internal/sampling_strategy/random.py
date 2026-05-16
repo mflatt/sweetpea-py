@@ -216,7 +216,10 @@ class UCSolutionEnumerator():
         # crossing --- which may be a result of a MinimumTrials
         # constraint that is greater than the number of different
         # combinations in the crossing, for example.
-        c_weight = block.crossing_weight(block.crossings[main_crossing])
+        if block.crossings == []:
+            c_weight = 1
+        else:
+            c_weight = block.crossing_weight(block.crossings[main_crossing])
 
         # Increase weights for each specific combination based on
         # weights attached to the levels in the combination (as
@@ -270,10 +273,14 @@ class UCSolutionEnumerator():
         self.preamble_sizes = [block.preamble_size(c) for c in block.crossings]
         self.crossing_weights = [block.crossing_weight(c) for c in block.crossings]
         # Check that calculations from two sources agree:
-        assert self.crossing_sizes[main_crossing] * self.crossing_weights[main_crossing] == self.crossing_size
+        if block.crossings != []:
+            assert self.crossing_sizes[main_crossing] * self.crossing_weights[main_crossing] == self.crossing_size
 
         noncomplex_crossing_size = self.noncomplex_crossing_size
-        preamble_size = self.preamble_sizes[main_crossing]
+        if block.crossings == []:
+            preamble_size = 0
+        else:
+            preamble_size = self.preamble_sizes[main_crossing]
         self._preamble_size = preamble_size;
 
         # Call `__count_solutions` after everything else is set up.

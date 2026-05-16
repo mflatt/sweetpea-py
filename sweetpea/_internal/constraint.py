@@ -1107,24 +1107,26 @@ class LatinSquare(Constraint):
         while i < num_trials:
             # For each trial in the segment:
             for j in range(0, diagonal_length):
-                # Each possible choice of the main factor determines
-                # the other factors
-                for k in range(0, diagonal_length):
-                    l = main_factor.levels[(k + rotations[main_factor_idx]) % len(main_factor.levels)]
-                    main_var = block.get_variable(i+j+1, (main_factor, l))
-                    for idx, f in enumerate(self.factors):
-                        if idx != main_factor_idx:
-                            l = f.levels[(k + rotations[idx]) % len(f.levels)]
-                            var = block.get_variable(i+j+1, (f, l))
-                            ands.append(If(main_var, var))
+                if i+j < num_trials:
+                    # Each possible choice of the main factor determines
+                    # the other factors
+                    for k in range(0, diagonal_length):
+                        l = main_factor.levels[(k + rotations[main_factor_idx]) % len(main_factor.levels)]
+                        main_var = block.get_variable(i+j+1, (main_factor, l))
+                        for idx, f in enumerate(self.factors):
+                            if idx != main_factor_idx:
+                                l = f.levels[(k + rotations[idx]) % len(f.levels)]
+                                var = block.get_variable(i+j+1, (f, l))
+                                ands.append(If(main_var, var))
 
-            # Make sure each main-factor level is picked once in each segment
+            # Make sure each main-factor level is picked at most once in each segment
             for l in main_factor.levels:
                 vars = []
                 for j in range(0, diagonal_length):
-                    var = block.get_variable(i+j+1, (main_factor, l))
-                    vars.append(var)
-                new_request = LowLevelRequest("EQ", 1, vars)
+                    if i+j < num_trials:
+                        var = block.get_variable(i+j+1, (main_factor, l))
+                        vars.append(var)
+                new_request = LowLevelRequest("LT", 2, vars)
                 backend_request.ll_requests.append(new_request)
 
             self._step_rotations(rotations, main_factor_idx)
@@ -1152,27 +1154,26 @@ class LatinSquare(Constraint):
         while i < num_trials:
             # For each trial in the segment:
             for j in range(0, diagonal_length):
-                # Each possible choice of the main factor determines
-                # the other factors
-                k = 0
-                for idx, l in enumerate(main_factor.levels):
-                    if sample[main_factor][i+j] is l:
-                        k = idx
-                for idx, f in enumerate(self.factors):
-                    expect_l = f.levels[(k + rotations[idx]) % len(f.levels)]
-                    if not sample[f][i+j] is expect_l:
-                        return False
-
-            # Make sure each main-factor level is picked once in each segment
-            for l in main_factor.levels:
-                found = False
-                for j in range(0, diagonal_length):
-                    if sample[main_factor][i+j] is l:
-                        if found:
+                if i+j < num_trials:
+                    # Each possible choice of the main factor determines
+                    # the other factors
+                    k = 0
+                    for idx, l in enumerate(main_factor.levels):
+                        if sample[main_factor][i+j] is l:
+                            k = idx
+                    for idx, f in enumerate(self.factors):
+                        expect_l = f.levels[(k + rotations[idx]) % len(f.levels)]
+                        if not sample[f][i+j] is expect_l:
                             return False
-                        found = True
-                if not found:
-                    return False
+
+            # Make sure main-factor selections are unique
+            found = {}
+            for j in range(0, diagonal_length):
+                if i+j < num_trials:
+                    f = sample[main_factor][i+j]
+                    if f in found:
+                        return False
+                    found[f] = True
 
             self._step_rotations(rotations, main_factor_idx)
 

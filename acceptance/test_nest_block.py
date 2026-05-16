@@ -2,8 +2,6 @@ import operator as op
 import pytest
 
 from sweetpea import *
-from sweetpea._internal.server import build_cnf
-from acceptance import shuffled_design_sample, path_to_cnf_files, reset_expected_solutions
 
 @pytest.mark.slow
 @pytest.mark.parametrize('strategy', [RandomGen, IterateSATGen])
