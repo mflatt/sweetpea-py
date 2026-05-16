@@ -31,8 +31,6 @@ class SMGen(Gen):
 
         if len(block.crossings) != 1:
             _cexit(f"Multiple-crossing blocks are not supported by SMGen.")
-        if block.crossing_size() + block.preamble_size() != block.trials_per_sample():
-            _cexit(f"Repeated blocks are not supported by SMGen.")
 
         for c in block.constraints:
             if (isinstance(c, AtMostKInARow) or isinstance(c, AtLeastKInARow) or isinstance(c, ExactlyK)

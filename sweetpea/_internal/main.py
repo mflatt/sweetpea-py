@@ -11,7 +11,6 @@ __all__ = [
     'Block', 'CrossBlock', 'MultiCrossBlock', 
     'Repeat', 'Nest', 'Merge',
     'RepeatMode', 'AlignmentMode',
-    'NestedBlock',
 
     'Factor', 'Level', 'DerivedLevel', 'ElseLevel', 'ContinuousFactor',
 
@@ -42,8 +41,7 @@ import time
 from sweetpea._internal.block import Block
 from sweetpea._internal.cross_block import (
     MultiCrossBlockRepeat, MultiCrossBlock, CrossBlock, RepeatMode, AlignmentMode,
-    Repeat, Nest, Merge,
-    NestedBlock
+    Repeat, Nest, Merge
 )
 from sweetpea._internal.primitive import (
     Factor, SimpleFactor, DerivedFactor, ContinuousFactor, Level, SimpleLevel, DerivedLevel, ElseLevel,
@@ -408,19 +406,6 @@ def synthesize_trials(block: Block,
         (when Latin Square counterbalancing is active).
     """
 
-    # Latin Square: auto-detect all participants when LatinSquare is present
-    from sweetpea._internal.cross_block import NestedBlock
-    if participants is None and isinstance(block, NestedBlock):
-        for c in getattr(block, '_user_constraints', []):
-            if isinstance(c, LatinSquare):
-                participants = list(range(c.num_participants))
-                break
-
-    if participants is not None:
-        return _synthesize_latin_square_participants(
-            block, samples, sampling_strategy, participants
-        )
-
     def starting(who):
         # type: (Any) -> None
         print("Sampling {} trial sequences using {}.".format(samples, who))
@@ -450,17 +435,6 @@ def synthesize_trials(block: Block,
         # Now filter hidden keys for the returned trials
         trialss.append(__filter_hidden_keys(with_implied))
 
-
-    # NestedBlock Specific
-    spec = getattr(block, "external_stitch_spec", lambda: None)()
-    if spec is not None:
-        with_implied = _apply_external_stitch(
-            block,
-            with_implied,
-            spec,
-            sampling_strategy
-        )
-
     # Sampling for ContinuousFactor
     if block.continuous_factors:
         for num_trial, trials in enumerate(trialss):
@@ -470,125 +444,6 @@ def synthesize_trials(block: Block,
         # Restore ContinuousFactor to the design
 
     return trialss
-
-def _group_for_latin_square(block, experiments):
-    for ct in block.orig_constraints:
-        if isinstance(ct, LatinSquare) and ct.name:
-            dlen = ct.diagonal_length()
-            new_exps = {}
-            for exp in experiments:
-                for i in range(0, len(exp[next(iter(exp))]), dlen):
-                    j = i // dlen
-                    if not j in new_exps:
-                        new_exps[j] = []
-                    new_exps[j].append({k: v[i:min(len(v),i+dlen)] for k,v in exp.items() })
-            return new_exps
-    return experiments
-
-def _synthesize_latin_square_participants(block, samples, sampling_strategy, participants):
-    """Build per-participant :class:`.NestedBlock` instances and solve each independently.
-
-    For each participant, creates a synthetic ``_ls_condition`` factor with only
-    that participant's diagonal combos, builds a reduced :class:`.NestedBlock`,
-    and solves it. Post-processes the output to split ``_ls_condition`` back
-    into original outer factor columns.
-
-    :param block:
-        The original :class:`.NestedBlock` containing a :class:`.LatinSquare`
-        constraint.
-
-    :param samples:
-        Number of trial sets to generate per participant.
-
-    :param sampling_strategy:
-        The sampling strategy to use (passed through to
-        :func:`.synthesize_trials`).
-
-    :param participants:
-        :class:`list` of participant IDs (:class:`int`).
-
-    :returns:
-        A :class:`dict` mapping participant IDs to :class:`lists <list>` of
-        experiment :class:`dicts <dict>`.
-    """
-    ls_constraint = None
-    for c in block.constraints:
-        if isinstance(c, LatinSquare):
-            ls_constraint = c
-            break
-
-    if ls_constraint is None:
-        raise ValueError(
-            "synthesize_trials: 'participants' parameter requires a "
-            "LatinSquare constraint in the block."
-        )
-
-    results = {}
-
-    for pid in participants:
-        reduced_nb, outer_factor_names, separator = \
-            ls_constraint.build_participant_block(block, pid)
-
-        # Solve one sample at a time so each gets its own external stitch
-        experiments = []
-        for _ in range(samples):
-            single = synthesize_trials(
-                reduced_nb, samples=1, sampling_strategy=sampling_strategy
-            )
-            experiments.extend(single)
-
-        # Split _ls_condition back into original outer factor columns
-        processed_experiments = []
-        for exp in experiments:
-            new_exp = {}
-            condition_values = exp.get("_ls_condition", [])
-            for f_idx, f_name in enumerate(outer_factor_names):
-                new_exp[f_name] = [
-                    v.split(separator)[f_idx] for v in condition_values
-                ]
-            for key, values in exp.items():
-                if key != "_ls_condition":
-                    new_exp[key] = values
-
-            processed_experiments.append(new_exp)
-
-        results[pid] = processed_experiments
-
-    return results
-
-def _apply_external_stitch(block, sample, spec, sampling_strategy):
-    ext_block   = spec["external_block"]
-    run_len     = spec["run_len"]
-    ext_design  = spec["external_design"]
-
-    # Sample external block (miniblock-level)
-    ext_sample = synthesize_trials(
-        ext_block, samples=1, sampling_strategy=sampling_strategy
-    )[0]
-
-    # Determine external preamble length
-    if ext_block.crossings:
-        ext_preamble = ext_block.preamble_size(ext_block.crossings[0])
-    else:
-        ext_preamble = 0
-
-    # Expand base external factors (skip preamble)
-    for f in ext_design:
-        if isinstance(f.name, HiddenName):
-            continue
-        for ii in range(ext_preamble):
-
-            sample[f.name][ii] = ext_sample[f.name][ii]
-
-        values = ext_sample[f.name]
-        
-        for ind, v in enumerate(values[ext_preamble:]):
-            for rep in range(run_len):
-                sample[f.name][ext_preamble+ind*run_len+rep] = v
-
-    return block.add_implied_levels(sample)
-
-
 
 def sample_mismatch_experiment(block: Block, sample: dict) -> dict:
     """Given an experiment described with a :class:`.Block`, tests if :class:`list`

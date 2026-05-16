@@ -16,7 +16,7 @@ def test_nest_block_correct_solution_count(strategy):
     session = Factor("session", ["s1", "s2"])
     outer = CrossBlock([session], [session], [])
 
-    nb = NestBlock(outer, inner, [])
+    nb = Nest(outer, inner, [])
 
     exps = synthesize_trials(nb, 2000, sampling_strategy=strategy)
     assert len(exps) == 24 * 24 *2
@@ -36,7 +36,7 @@ def test_nest_block_dependent_correct_solution_count():
     session = Factor("session", ["s1", "s2"])
     inner = CrossBlock([session], [session], [])
     
-    nb = NestBlock(outer, inner, [], alignment=AlignmentMode.POST_PREAMBLE)
+    nb = Nest(outer, inner, [], alignment=AlignmentMode.POST_PREAMBLE)
 
     exps = synthesize_trials(nb, 1000, sampling_strategy=IterateSATGen)
     assert len(exps) == 384

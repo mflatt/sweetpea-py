@@ -633,11 +633,18 @@ class Block:
         else:
             return 1
 
+    @abstractmethod
+    def factor_preamble_size(self, f: Factor):
+        pass
+
     def get_trial_numbers(self, f: Factor, b_trial_no: int, within_block: Optional[BlockGeometry] = None) -> List[int]:
         if within_block is None:
             sustain_count = self.sustain_count(f)
         else:
-            sustain_count = within_block.factor_to_sustain_count[f]
+            if f in within_block.factor_to_sustain_count:
+                sustain_count = within_block.factor_to_sustain_count[f]
+            else:
+                sustain_count = 1
         def get_variables(start: int, end: int) -> List[int]:
             nonlocal b_trial_no
             nonlocal sustain_count
