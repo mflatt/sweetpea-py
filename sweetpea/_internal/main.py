@@ -8,7 +8,10 @@ __all__ = [
     'print_experiments', 'tabulate_experiments',
     'save_experiments_csv', 'experiments_to_tuples', 'experiments_to_dicts',
 
-    'Block', 'CrossBlock', 'MultiCrossBlock', 'Repeat', 'RepeatMode', 'AlignmentMode', 'NestBlock', 'NestedBlock',
+    'Block', 'CrossBlock', 'MultiCrossBlock', 
+    'Repeat', 'Nest', 'Merge',
+    'RepeatMode', 'AlignmentMode',
+    'NestedBlock',
 
     'Factor', 'Level', 'DerivedLevel', 'ElseLevel', 'ContinuousFactor',
 
@@ -38,8 +41,9 @@ import time
 
 from sweetpea._internal.block import Block
 from sweetpea._internal.cross_block import (
-    MultiCrossBlockRepeat, MultiCrossBlock, CrossBlock, Repeat, RepeatMode, AlignmentMode,
-    NestBlock, NestedBlock
+    MultiCrossBlockRepeat, MultiCrossBlock, CrossBlock, RepeatMode, AlignmentMode,
+    Repeat, Nest, Merge,
+    NestedBlock
 )
 from sweetpea._internal.primitive import (
     Factor, SimpleFactor, DerivedFactor, ContinuousFactor, Level, SimpleLevel, DerivedLevel, ElseLevel,
@@ -167,6 +171,16 @@ def print_experiments(block, experiments):
     # Restore continuous factors for printing trials
     block.restore_continuous()
 
+    ls_name = None
+    ls_dlen = 0
+    for ct in block.orig_constraints:
+        if isinstance(ct, LatinSquare) and ct.name:
+            ls_name = ct.name
+            ls_dlen = ct.diagonal_length()
+
+    if isinstance(experiments[0], List) and ls_name:
+        experiments = _group_for_latin_square(block, experiments)
+
     # Handle Dict[int, List[dict]] from Latin Square synthesize_trials
     if isinstance(experiments, dict):
         for pid in sorted(experiments.keys()):
@@ -182,12 +196,20 @@ def print_experiments(block, experiments):
     print('\n{} trial sequences found.\n'.format(len(experiments)))
     for idx, e in enumerate(experiments):
         print('Experiment {}:'.format(idx))
-        _print_experiment_default(e)
+        e_len = len(e[next(iter(e))])
+        if ls_name:
+            print('')
+            for i in range(0, e_len, ls_dlen):
+                print('{} {}:'.format(ls_name, (i // ls_dlen) % ls_dlen))
+                _print_experiment_participant(block.orig_design,  e, i, min(i+ls_dlen, e_len))
+        else:
+            _print_experiment_participant(block.orig_design, e, 0, e_len)
 
-
-def _print_experiment_default(e):
-    """Print a single experiment in the default format (no Latin Square)."""
-    strs = [list(map(lambda v: name + " " + str(v), values)) for (name, values) in e.items()]
+def _print_experiment_participant(design, e, start, end):
+    """Print a single experiment/participant."""
+    # Use factor-name order from the block's design so that output is consistent
+    names = [f.name for f in design if not isinstance(f.name, HiddenName)]
+    strs = [list(map(lambda v: name + " " + str(v), e[name][start:end])) for name in names]
     transposed = list(map(list, zip(*strs)))
     format_str = _get_column_widths(transposed)
     print(reduce(lambda a, b: a + format_str.format(*b), transposed, ''))
@@ -454,7 +476,6 @@ def synthesize_trials(block: Block,
             sampling_strategy
         )
 
-
     # Sampling for ContinuousFactor
     if block.continuous_factors:
         for num_trial, trials in enumerate(trialss):
@@ -462,8 +483,23 @@ def synthesize_trials(block: Block,
             for k in continuous_samples:
                 trials[k] = continuous_samples[k]
         # Restore ContinuousFactor to the design
+
     return trialss
 
+def _group_for_latin_square(block, experiments):
+    for ct in block.orig_constraints:
+        if isinstance(ct, LatinSquare) and ct.name:
+            dlen = ct.diagonal_length()
+            new_exps = {}
+            for exp in experiments:
+                for i in range(0, len(exp[next(iter(exp))]), dlen):
+                    j = i // dlen
+                    if not j in new_exps:
+                        new_exps[j] = []
+                    new_exps[j].append({k: v[i:min(len(v),i+dlen)] for k,v in exp.items() })
+            print(new_exps)
+            return new_exps
+    return experiments
 
 def _synthesize_latin_square_participants(block, samples, sampling_strategy, participants):
     """Build per-participant :class:`.NestedBlock` instances and solve each independently.

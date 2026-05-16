@@ -976,7 +976,7 @@ class Reify(Constraint):
         return True
 
     def desugar(self, replacements: dict) -> List:
-        factor = replacements.get(self.factor, self.factor)
+        factor = replacements.get(self.factor, [self.factor, self.factor])[1]
         return [Reify(factor)]
 
 
@@ -1068,29 +1068,29 @@ class LatinSquare(Constraint):
     (length = preamble + crossing_size) to the permutation chosen by the factor.
     """
     def __init__(self,
-                 factors: List[Factor]):
+                 factors: List[Factor],
+                 name: Optional[str] = None):
         who = "LatinSquare"
         if factors == []:
             raise ValueError(who, "factor list must be non-empty")
         argcheck(who, factors, make_islistof(Factor), "factors")
         self.factors = factors
         self.within_block = cast(Optional[BlockGeometry], None)
-        self.diagonal_length = max([len(f.levels) for f in factors])
-        self.main_factor_idx = 0
-        for idx, f in enumerate(self.factors):
-            if len(f.levels) > len(self.factors[self.main_factor_idx].levels):
-                self.main_factor_idx = idx
+        self.name = name
 
     def validate(self, block: Block) -> None:
+        who = "LatinSquare"
         for f in self.factors:
             validate_factor(block, f)
         sustain_count = block.sustain_count(self.factors[0])
         preamble_size = block.factor_preamble_size(self.factors[0])
         for f in self.factors:
             if block.sustain_count(f) != sustain_count:
-                raise ValueError("LatinSquare", "inconsistent sustain counts for factors")
+                raise ValueError(who, "inconsistent sustain counts for factors")
             if block.factor_preamble_size(f) != preamble_size:
-                raise ValueError("LatinSquare", "inconsistent preamble sizes for factor")
+                raise ValueError(who, "inconsistent preamble sizes for factor")
+            if f.level_weight_sum() != len(f.levels):
+                raise ValueError(who, "weighted levels not currently supported")
 
     def uses_factor(self, f: Factor) -> bool:
         for factor in self.factors:
@@ -1099,44 +1099,59 @@ class LatinSquare(Constraint):
         return False
 
     def desugar(self, replacements: dict) -> List:
-        return [LatinSquare([replacements.get(f, f) for f in self.factors])]
+        return [LatinSquare([replacements.get(f, [f, f])[1] for f in self.factors],
+                            self.name)]
 
     def _make_rotations(self):
         return [0 for f in self.factors]
 
-    def _step_rotations(self, rotations):
+    def _step_rotations(self, rotations, main_factor_idx):
         k = len(self.factors) - 1
-        while k > 0:
-            rotations[k] += 1
-            if rotations[k] < len(self.factors[k].levels):
-                break
-            else:
-                rotations[k] = 0
+        while k >= 0:
+            if k != main_factor_idx:
+                rotations[k] += 1
+                if rotations[k] < len(self.factors[k].levels):
+                    break
+                else:
+                    rotations[k] = 0
             k = k - 1
+
+    def diagonal_length(self):
+        return max([len(f.levels) for f in self.factors])
+                
+    def _get_shape(self):
+        diagonal_length = self.diagonal_length()
+        main_factor_idx = 0
+        for idx, f in enumerate(self.factors):
+            if len(f.levels) == diagonal_length:
+                main_factor_idx = idx
+        return (diagonal_length, main_factor_idx)
 
     def apply(self, block: Block, backend_request: BackendRequest) -> None:
         if len(self.factors) == 1:
             return
 
+        (diagonal_length, main_factor_idx) = self._get_shape()
+
         level_lists = [list(f.levels) for f in self.factors]
         sustain_count = block.sustain_count(self.factors[0])
         preamble_size = block.factor_preamble_size(self.factors[0])
         num_trials = block.trials_per_sample()
-        main_factor = self.factors[self.main_factor_idx]
+        main_factor = self.factors[main_factor_idx]
 
         ands = []
         i = preamble_size
         rotations = self._make_rotations()
         while i < num_trials:
             # For each trial in the segment:
-            for j in range(0, self.diagonal_length):
+            for j in range(0, diagonal_length):
                 # Each possible choice of the main factor determines
                 # the other factors
-                for k in range(0, self.diagonal_length):
-                    l = main_factor.levels[(k + rotations[self.main_factor_idx]) % len(main_factor.levels)]
+                for k in range(0, diagonal_length):
+                    l = main_factor.levels[(k + rotations[main_factor_idx]) % len(main_factor.levels)]
                     main_var = block.get_variable(i+j+1, (main_factor, l))
                     for idx, f in enumerate(self.factors):
-                        if idx != self.main_factor_idx:
+                        if idx != main_factor_idx:
                             l = f.levels[(k + rotations[idx]) % len(f.levels)]
                             var = block.get_variable(i+j+1, (f, l))
                             ands.append(If(main_var, var))
@@ -1144,15 +1159,15 @@ class LatinSquare(Constraint):
             # Make sure each main-factor level is picked once in each segment
             for l in main_factor.levels:
                 vars = []
-                for j in range(0, self.diagonal_length):
+                for j in range(0, diagonal_length):
                     var = block.get_variable(i+j+1, (main_factor, l))
                     vars.append(var)
                 new_request = LowLevelRequest("EQ", 1, vars)
                 backend_request.ll_requests.append(new_request)
 
-            self._step_rotations(rotations)
+            self._step_rotations(rotations, main_factor_idx)
 
-            i += self.diagonal_length * sustain_count
+            i += diagonal_length * sustain_count
 
         (cnf, new_fresh) = block.cnf_fn(And(ands), backend_request.fresh)
         backend_request.cnfs.append(cnf)
@@ -1162,17 +1177,19 @@ class LatinSquare(Constraint):
         if len(self.factors) == 1:
             return True
 
+        (diagonal_length, main_factor_idx) = self._get_shape()
+
         level_lists = [list(f.levels) for f in self.factors]
         sustain_count = block.sustain_count(self.factors[0])
         preamble_size = block.factor_preamble_size(self.factors[0])
         num_trials = block.trials_per_sample()
-        main_factor = self.factors[self.main_factor_idx]
+        main_factor = self.factors[main_factor_idx]
 
         i = preamble_size
         rotations = self._make_rotations()
         while i < num_trials:
             # For each trial in the segment:
-            for j in range(0, self.diagonal_length):
+            for j in range(0, diagonal_length):
                 # Each possible choice of the main factor determines
                 # the other factors
                 k = 0
@@ -1187,7 +1204,7 @@ class LatinSquare(Constraint):
             # Make sure each main-factor level is picked once in each segment
             for l in main_factor.levels:
                 found = False
-                for j in range(0, self.diagonal_length):
+                for j in range(0, diagonal_length):
                     if sample[main_factor][i+j] is l:
                         if found:
                             return False
@@ -1195,11 +1212,16 @@ class LatinSquare(Constraint):
                 if not found:
                     return False
 
-            self._step_rotations(rotations)
+            self._step_rotations(rotations, main_factor_idx)
 
-            i += self.diagonal_length * sustain_count
+            i += diagonal_length * sustain_count
 
         return True
+
+    def derivable_factors(self, block: Block) -> List[Factor]:
+        (diagonal_length, main_factor_idx) = self._get_shape()
+        return [self.factors[:main_factor_idx] + self.factors[main_factor_idx+1:],
+                [self.factors[main_factor_idx]]]
 
 class Sequential(Constraint):
     """Constraint that ensures that the levels of a trial are used by trails in order.
@@ -1219,13 +1241,16 @@ class Sequential(Constraint):
         # since we can otherwise deal with desugared factors
 
     def validate(self, block: Block) -> None:
+        who = "Sequential"
         validate_factor(block, self.factor)
+        if self.factor.level_weight_sum() != len(self.factor.levels):
+            raise ValueError(who, "weighted levels not currently supported")
 
     def uses_factor(self, f: Factor) -> bool:
         return self.factor.uses_factor(f)
 
     def desugar(self, replacements: dict) -> List[Constraint]:
-        factor = replacements.get(self.factor, self.factor)
+        factor = replacements.get(self.factor, [self.factor, self.factor])[1]
         return [Sequential(factor)]
 
     def is_complex_for_combinatoric(self) -> bool:
@@ -1241,7 +1266,7 @@ class Sequential(Constraint):
         ands = []
         while i < num_trials:
             # For each trial in the segment:
-            use_l = f.levels[(i - preamble_size) % len(f.levels)]
+            use_l = f.levels[((i - preamble_size) //sustain_count) % len(f.levels)]
             for l in f.levels:
                 var = block.get_variable(i+1, (f, l))
                 if l is use_l:
@@ -1249,7 +1274,6 @@ class Sequential(Constraint):
                 else:
                     ands.append(Not(var))
             i += sustain_count
-        print("done")
         (cnf, new_fresh) = block.cnf_fn(And(ands), backend_request.fresh)
         backend_request.cnfs.append(cnf)
         backend_request.fresh = new_fresh
@@ -1277,6 +1301,9 @@ class Sequential(Constraint):
 
     def __repr__(self):
         return f"Sequential({self.factor.name})"
+
+    def derivable_factors(self, block: Block) -> List[Factor]:
+        return [[self.factor], []]
 
 
 class OrderRunsByPermutation(Constraint):
