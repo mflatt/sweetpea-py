@@ -885,7 +885,8 @@ original `inner block`.
     day d1 | session s2 | A a1 | B b2
     day d1 | session s2 | A a1 | B b1
 
-
+.. _latin-square-counterbalancing:
+    
 Latin Square Counterbalancing
 -----------------------------
 

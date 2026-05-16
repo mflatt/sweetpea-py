@@ -726,15 +726,9 @@ class Repeat(MultiCrossBlockRepeat):
                  constraints: List[Constraint]):
         from sweetpea._internal.constraint import Exclude
         who = "Repeat"
-        
-        argcheck(who, block, MultiCrossBlock, "MultiCrossBlock object")
-        argcheck(who, constraints, make_islistof(Constraint), "list of Constraints for constraints")
 
-        # We might need another subtype layer in the future, but currently `Exclude`
-        # is the only disallowed `Constraint` type:
-        for c in constraints:
-            if isinstance(c, Exclude):
-                raise ValueError("Exclude constraints not allowed in list of constraints")
+        argcheck(who, block, MultiCrossBlock, "Block")
+        argcheck(who, constraints, make_islistof(Constraint), "list of Constraints")
 
         self._create(who,
                      block.orig_design, block.orig_crossings, block.crossing_sustain_counts, block.crossing_weights,
